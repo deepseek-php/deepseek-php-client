@@ -136,9 +136,9 @@ class DeepseekClient implements DeepseekClientContract
         return $this;
     }
 
-    public function setTemperature(float $temperature): self
+    public function setTemperature(TemperatureValues $temperature): self
     {
-        $this->temperature = $temperature;
+        $this->temperature = (float) $temperature->value;
         return $this;
     }
 
