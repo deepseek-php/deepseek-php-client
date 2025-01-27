@@ -14,7 +14,7 @@ abstract class ResultAbstract implements ResultContract
     protected ?int $statusCode;
     protected ?string $content;
     /**
-     * handel response comeing from request
+     * handel response coming from request
      * @var ResponseInterface|null
      */
     protected ?ResponseInterface $response;
