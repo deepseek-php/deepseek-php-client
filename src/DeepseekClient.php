@@ -2,16 +2,16 @@
 
 namespace DeepseekPhp;
 
-use DeepseekPhp\Contracts\DeepseekClientContract;
-use DeepseekPhp\Contracts\Models\ResultContract;
-use DeepseekPhp\Resources\Resource;
+use DeepSeekPhp\Contracts\DeepseekClientContract;
+use DeepSeekPhp\Contracts\Models\ResultContract;
+use DeepSeekPhp\Resources\Resource;
 use Psr\Http\Client\ClientInterface;
-use DeepseekPhp\Factories\ApiFactory;
-use DeepseekPhp\Enums\Queries\QueryRoles;
-use DeepseekPhp\Enums\Requests\QueryFlags;
-use DeepseekPhp\Enums\Requests\HeaderFlags;
-use DeepseekPhp\Enums\Configs\TemperatureValues;
-use DeepseekPhp\Traits\Resources\{HasChat, HasCoder};
+use DeepSeekPhp\Factories\ApiFactory;
+use DeepSeekPhp\Enums\Queries\QueryRoles;
+use DeepSeekPhp\Enums\Requests\QueryFlags;
+use DeepSeekPhp\Enums\Requests\HeaderFlags;
+use DeepSeekPhp\Enums\Configs\TemperatureValues;
+use DeepSeekPhp\Traits\Resources\{HasChat, HasCoder};
 
 class DeepseekClient implements DeepseekClientContract
 {

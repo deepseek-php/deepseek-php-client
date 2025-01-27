@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace DeepseekPhp\Models;
+namespace DeepSeekPhp\Models;
 
 
-use DeepseekPhp\Contracts\Models\ResultContract;
-use DeepseekPhp\Enums\Requests\HTTPState;
+use DeepSeekPhp\Contracts\Models\ResultContract;
+use DeepSeekPhp\Enums\Requests\HTTPState;
 use Psr\Http\Message\ResponseInterface;
 
 abstract class ResultAbstract implements ResultContract

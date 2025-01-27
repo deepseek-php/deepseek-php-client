@@ -1,6 +1,6 @@
 <?php
 
-namespace DeepseekPhp\Contracts\Models;
+namespace DeepSeekPhp\Contracts\Models;
 
 
 interface ResultContract

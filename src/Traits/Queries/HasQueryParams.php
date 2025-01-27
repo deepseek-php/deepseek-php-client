@@ -1,6 +1,6 @@
 <?php
 
-namespace DeepseekPhp\Traits\Queries;
+namespace DeepSeekPhp\Traits\Queries;
 
 use DeepseekPhp\Enums\Data\DataTypes;
 use DeepseekPhp\Enums\Requests\QueryFlags;

@@ -1,10 +1,10 @@
 <?php
-namespace DeepseekPhp\Tests;
+namespace DeepSeekPhp\Tests;
 
 
-use DeepseekPhp\Enums\Requests\HTTPState;
+use DeepSeekPhp\Enums\Requests\HTTPState;
 use PHPUnit\Framework\TestCase;
-use DeepseekPhp\DeepseekClient;
+use DeepSeekPhp\DeepseekClient;
 
 class HandelResultDeepseekTest extends TestCase
 {

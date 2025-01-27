@@ -1,6 +1,6 @@
 <?php
 
-namespace DeepseekPhp\Enums\Configs;
+namespace DeepSeekPhp\Enums\Configs;
 
 enum TemperatureValues: string
 {

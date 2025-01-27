@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DeepseekPhp\Resources;
+namespace DeepSeekPhp\Resources;
 
 use DeepseekPhp\Contracts\Models\ResultContract;
 use DeepseekPhp\Contracts\Resources\ResourceContract;

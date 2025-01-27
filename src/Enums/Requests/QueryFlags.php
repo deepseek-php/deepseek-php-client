@@ -1,6 +1,6 @@
 <?php
 
-namespace DeepseekPhp\Enums\Requests;
+namespace DeepSeekPhp\Enums\Requests;
 
 enum QueryFlags: string
 {

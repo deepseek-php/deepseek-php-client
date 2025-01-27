@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace DeepseekPhp\Resources;
+namespace DeepSeekPhp\Resources;
 
-use DeepseekPhp\Enums\Models;
+use DeepSeekPhp\Enums\Models;
 
 class Coder extends Resource
 {
