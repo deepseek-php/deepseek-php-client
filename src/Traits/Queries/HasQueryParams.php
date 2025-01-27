@@ -35,24 +35,16 @@ trait HasQueryParams
      */
     private function convertValue($value, string $type): mixed
     {
-        switch ($type) {
-            case DataTypes::STRING->value:
-                return (string) $value;
-            case DataTypes::INTEGER->value:
-                return (int) $value;
-            case DataTypes::FLOAT->value:
-                return (float) $value;
-            case DataTypes::ARRAY->value:
-                return (array) $value;
-            case DataTypes::OBJECT->value:
-                return (object) $value;
-            case DataTypes::BOOL->value:
-                return (bool) $value;
-            case DataTypes::JSON->value:
-                return json_decode((string) $value, true);
-            default:
-                return $value;
-        }
+        return match ($type) {
+            DataTypes::STRING->value => (string)$value,
+            DataTypes::INTEGER->value => (int)$value,
+            DataTypes::FLOAT->value => (float)$value,
+            DataTypes::ARRAY->value => (array)$value,
+            DataTypes::OBJECT->value => (object)$value,
+            DataTypes::BOOL->value => (bool)$value,
+            DataTypes::JSON->value => json_decode((string)$value, true),
+            default => $value,
+        };
     }
 
     /**
@@ -63,13 +55,10 @@ trait HasQueryParams
      */
     private function getDefaultForKey(string $key): mixed
     {
-        switch ($key) {
-            case QueryFlags::MODEL->value:
-                return $this->getDefaultModel();
-            case QueryFlags::STREAM->value:
-                return $this->getDefaultStream();
-            default:
-                return null;
-        }
+        return match ($key) {
+            QueryFlags::MODEL->value => $this->getDefaultModel(),
+            QueryFlags::STREAM->value => $this->getDefaultStream(),
+            default => null,
+        };
     }
 }
