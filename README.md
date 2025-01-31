@@ -117,7 +117,7 @@ Thanks to these wonderful people for contributing to this project! 💖
         <sub><b>ayman alhattami</b></sub>
       </a>
       <br />
-      🏆 Contributer
+      🏆 Contributor
     </td>
     <td align="center">
       <a href="https://github.com/moassaad">
@@ -126,7 +126,7 @@ Thanks to these wonderful people for contributing to this project! 💖
         <sub><b>Mohammad Asaad</b></sub>
       </a>
       <br />
-      🏆 Contributer
+      🏆 Contributor
     </td>
     <td align="center">
       <a href="https://github.com/OpadaAlzaiede">
@@ -135,7 +135,7 @@ Thanks to these wonderful people for contributing to this project! 💖
         <sub><b>Opada Alzaiede</b></sub>
       </a>
       <br />
-      🏆 Contributer
+      🏆 Contributor
     </td>
     <!-- Contributors -->
   </tr>
