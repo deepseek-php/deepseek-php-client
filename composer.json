@@ -81,6 +81,7 @@
         "pestphp/pest-plugin-arch": "^2.7|^3.0",
         "pestphp/pest-plugin-type-coverage": "^2.8.7|^3.1.0",
         "phpstan/phpstan": "^1.12.7",
+        "phpunit/phpunit": "11.5.3",
         "roave/security-advisories": "dev-latest",
         "symfony/var-dumper": "^6.4.11|^7.1.5"
     },
