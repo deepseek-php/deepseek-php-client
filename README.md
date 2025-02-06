@@ -175,9 +175,9 @@ A huge thank you to these amazing people who have contributed to this project! 
     </td>
     <td align="center">
       <a href="https://github.com/hishamco">
-        <img src="https://avatars.githubusercontent.com/u/3237266?v=4" width="60px;" style="border-radius:50%;" alt="Hisham Abdullah"/>
+        <img src="https://avatars.githubusercontent.com/u/3237266?v=4" width="60px;" style="border-radius:50%;" alt="Hisham Bin Ateya"/>
         <br />
-        <b>Hisham Abdullah</b>
+        <b>Hisham Bin Ateya</b>
       </a>
       <br />
       ‚≠ê Contributor
