@@ -2,101 +2,47 @@
 
 namespace DeepSeek;
 
-use DeepSeek\Contracts\DeepseekClientContract;
 use DeepSeek\Contracts\Models\ResultContract;
-use DeepSeek\Resources\Resource;
-use Psr\Http\Client\ClientInterface;
-use DeepSeek\Factories\ApiFactory;
-use DeepSeek\Enums\Queries\QueryRoles;
-use DeepSeek\Enums\Requests\QueryFlags;
+use DeepSeek\Enums\Configs\DefaultConfigs;
 use DeepSeek\Enums\Requests\HeaderFlags;
-use DeepSeek\Enums\Configs\TemperatureValues;
+use DeepSeek\Http\DefaultHttpClientFactory;
+use DeepSeek\Http\HttpClient;
 use DeepSeek\Traits\Resources\{HasChat, HasCoder};
 
-class DeepSeekClient implements DeepseekClientContract
+class DeepSeekClient implements IDeepSeekClient, IDeepSeekQuery
 {
     use HasChat, HasCoder;
 
-    /**
-     * PSR-18 HTTP client for making requests.
-     *
-     * @var ClientInterface
-     */
-    protected ClientInterface $httpClient;
+    private HttpClient $httpClient;
+    private DeepSeekClientOptions $clientOptions;
+    private DeepSeekQueryOptions $queryOptions;
+    private array $query = [];
 
-    /**
-     * Array to store accumulated queries.
-     *
-     * @var array
-     */
-    protected array $queries = [];
-
-    /**
-     * The model being used for API requests.
-     *
-     * @var string|null
-     */
-    protected ?string $model;
-
-    /**
-     * Indicates whether to enable streaming for API responses.
-     *
-     * @var bool
-     */
-    protected bool $stream;
-
-    protected float $temperature;
-
-    /**
-     * response result contract
-     * @var ResultContract
-     */
-    protected ResultContract $result;
-
-    /**
-     * Initialize the DeepSeekClient with a PSR-compliant HTTP client.
-     *
-     * @param ClientInterface $httpClient The HTTP client used for making API requests.
-     */
-    public function __construct(ClientInterface $httpClient)
+    public function __construct(HttpClient $httpClient, ?DeepSeekClientOptions $options)
     {
         $this->httpClient = $httpClient;
-        $this->model = null;
-        $this->stream = false;
-        $this->temperature = (float) TemperatureValues::GENERAL_CONVERSATION->value;
-    }
-
-    public function run(): string
-    {
-        $requestData = [
-            QueryFlags::MESSAGES->value => $this->queries,
-            QueryFlags::MODEL->value    => $this->model,
-            QueryFlags::STREAM->value   => $this->stream,
-            QueryFlags::TEMPERATURE->value   => $this->temperature,
-        ];
-        // Clear queries after sending
-        $this->queries = [];
-        $this->result = (new Resource($this->httpClient))->sendRequest($requestData);
-        return $this->getResult()->getContent();
+        $this->clientOptions = $options ?? new DeepSeekClientOptions();
+        $this->queryOptions = new DeepSeekQueryOptions();
     }
 
     /**
-     * Create a new DeepSeekClient instance with the given API key.
+     * Create a new DeepSeekClient instance with a given options.
      *
-     * @param string $apiKey The API key for authentication.
-     * @param string|null $baseUrl The base URL for the API (optional).
-     * @param int|null $timeout The timeout duration for requests in seconds (optional).
+     * @param DeepSeekClientOptions $options A client options.
      * @return self A new instance of the DeepSeekClient.
      */
-    public static function build(string $apiKey, ?string $baseUrl = null, ?int $timeout = null): self
+    public static function build(DeepSeekClientOptions $options): self
     {
-        $httpClient = ApiFactory::build()
-            ->setBaseUri($baseUrl)
-            ->setTimeout($timeout)
-            ->setKey($apiKey)
-            ->run();
+        $httpClient = DefaultHttpClientFactory::getInstance()->createClient("DeepSeekClient");
 
-        return new self($httpClient);
+        $httpClient->baseAddress = DefaultConfigs::BASE_URL->value;
+        $httpClient->timeout = $options->timeout ?? (int)DefaultConfigs::TIMEOUT->value;
+        $httpClient->headers = [
+            HeaderFlags::AUTHORIZATION->value => 'Bearer ' . $options->apiKey,
+            HeaderFlags::CONTENT_TYPE->value => "application/json",
+        ];
+
+        return new self($httpClient, $options);
     }
 
     /**
@@ -106,56 +52,72 @@ class DeepSeekClient implements DeepseekClientContract
      * @param string|null $role
      * @return self The current instance for method chaining.
      */
-    public function query(string $content, ?string $role = null): self
+    public function query(string $content, ?string $role = "user"): IDeepSeekQuery
     {
-        $this->queries[] = $this->buildQuery($content, $role);
+        $this->query[] = [
+            'role' => $role,
+            'content' => $content
+        ];
+
         return $this;
     }
 
     /**
      * Set the model to be used for API requests.
      *
-     * @param string|null $model The model name (optional).
+     * @param string $model The model name (optional).
      * @return self The current instance for method chaining.
      */
-    public function withModel(?string $model = null): self
+    public function withModel(string $model): IDeepSeekQuery
     {
-        $this->model = $model;
+        $this->queryOptions->model = $model;
+
         return $this;
     }
 
     /**
      * Enable or disable streaming for API responses.
      *
-     * @param bool $stream Whether to enable streaming (default: true).
+     * @param bool $stream Whether to enable streaming.
      * @return self The current instance for method chaining.
      */
-    public function withStream(bool $stream = true): self
+    public function withStream(bool $stream): IDeepSeekQuery
     {
-        $this->stream = $stream;
+        $this->queryOptions->stream = $stream;
+
         return $this;
     }
 
-    public function setTemperature(float $temperature): self
+    public function withTemperature(float $temperature): IDeepSeekQuery
     {
-        $this->temperature = $temperature;
+        $this->queryOptions->temperature = $temperature;
+
         return $this;
     }
 
-    protected function buildQuery(string $content, ?string $role = null): array
+    public function run(): ResultContract
     {
-        return [
-            'role' => $role ?: QueryRoles::USER->value,
-            'content' => $content
-        ];
+        $queryRunner = new DeepSeekQueryRunner($this->httpClient, $this->getQueryOptions());
+        $result = $queryRunner->run($this->query);
+
+        // Clear queries after sending
+        $this->query = [];
+
+        return $result;
     }
 
-    /**
-     * response result model
-     * @return \DeepSeek\Contracts\Models\ResultContract
-     */
-    public function getResult(): ResultContract
+    public function getClientOptions(): DeepSeekClientOptions
     {
-        return $this->result;
+        return $this->clientOptions;
+    }
+
+    public function getHttpClient(): HttpClient
+    {
+        return $this->httpClient;
+    }
+
+    public function getQueryOptions(): DeepSeekQueryOptions
+    {
+        return $this->queryOptions;
     }
 }

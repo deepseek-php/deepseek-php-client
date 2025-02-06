@@ -1,15 +1,24 @@
 <?php
 namespace Tests\Feature;
 
-
 use DeepSeek\DeepSeekClient;
+use DeepSeek\DeepSeekClientOptions;
 use DeepSeek\Enums\Requests\HTTPState;
 use PHPUnit\Framework\TestCase;
 
 class HandelResultDeepseekTest extends TestCase
 {
-    protected $apiKey;
-    protected $expiredApiKey;
+    private DeepSeekClientOptions $clientOptions;
+
+    function __construct(string $name)
+    {
+        parent::__construct($name);
+
+        $this->clientOptions = new DeepSeekClientOptions();
+    }
+
+    protected string $apiKey;
+    protected string $expiredApiKey;
     protected function setUp():void
     {
         $this->apiKey = "valid-api-key";
@@ -17,38 +26,41 @@ class HandelResultDeepseekTest extends TestCase
     }
     public function test_ok_response()
     {
-        $deepseek = DeepSeekClient::build($this->apiKey)
-            ->query('Hello Deepseek, how are you today?')
-            ->setTemperature(1.5);
-        $response = $deepseek->run();
-        $result = $deepseek->getResult();
+        $this->clientOptions->apiKey = $this->apiKey;
 
-        $this->assertNotEmpty($response);
+        $query = DeepSeekClient::build($this->clientOptions)
+            ->query('Hello DeepSeek, how are you today?')
+            ->withTemperature(1.5);
+
+        $result = $query->run();
+
+        $this->assertNotEmpty($result);
         $this->assertEquals(HTTPState::OK->value, $result->getStatusCode());
     }
     public function test_can_not_access_with_api_expired_payment()
     {
-        $deepseek = DeepSeekClient::build($this->expiredApiKey)
-            ->query('Hello Deepseek, how are you today?')
-            ->setTemperature(1.5);
-        $response = $deepseek->run();
-        $result = $deepseek->getResult();
+        $this->clientOptions->apiKey = $this->expiredApiKey;
 
-        $this->assertNotEmpty($response);
-        if(!$result->isSuccess())
-        {
-            $this->assertEquals(HTTPState::PAYMENT_REQUIRED->value, $result->getStatusCode());
-        }
+        $query = DeepSeekClient::build($this->clientOptions)
+            ->query('Hello Deepseek, how are you today?')
+            ->withTemperature(1.5);
+
+        $result = $query->run();
+
+        $this->assertNotEmpty($result);
+        $this->assertEquals(HTTPState::PAYMENT_REQUIRED->value, $result->getStatusCode());
     }
     public function test_access_with_wrong_api_key()
     {
-        $deepseek = DeepSeekClient::build($this->apiKey."wrong-api-key")
-            ->query('Hello Deepseek, how are you today?')
-            ->setTemperature(1.5);
-        $response = $deepseek->run();
-        $result = $deepseek->getResult();
+        $this->clientOptions->apiKey = "wrong-api-key";
 
-        $this->assertNotEmpty($response);
+        $query = DeepSeekClient::build($this->clientOptions)
+            ->query('Hello Deepseek, how are you today?')
+            ->withTemperature(1.5);
+
+        $result = $query->run();
+
+        $this->assertNotEmpty($result);
         $this->assertEquals(HTTPState::UNAUTHORIZED->value, $result->getStatusCode());
     }
 }
