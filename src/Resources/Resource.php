@@ -6,7 +6,7 @@ namespace DeepSeek\Resources;
 
 use DeepSeek\Contracts\Models\ResultContract;
 use DeepSeek\Contracts\Resources\ResourceContract;
-use DeepSeek\Enums\Configs\DefaultConfigs;
+use DeepSeek\DefaultConfiguration;
 use DeepSeek\Enums\Models;
 use DeepSeek\Enums\Data\DataTypes;
 use DeepSeek\Enums\Requests\EndpointSuffixes;
@@ -144,7 +144,7 @@ class Resource implements ResourceContract
      */
     public function getDefaultStream(): bool
     {
-        return DefaultConfigs::STREAM->value === 'true';
+        return DefaultConfiguration::STREAM->value == true;
     }
 
     /**
