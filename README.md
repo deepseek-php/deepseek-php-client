@@ -41,6 +41,7 @@
 - **Enterprise Ready**: PSR-18 compliant HTTP client integration
 - **Model Flexibility**: Support for multiple DeepSeek models (Coder, Chat, etc.)
 - **Streaming Ready**: Built-in support for real-time response handling
+- **Function Calling**: Allows the model to call external tools to enhance its capabilities
 - **Framework Friendly**: Laravel & Symfony packages available
 
 ---
@@ -88,6 +89,38 @@ $response = DeepSeekClient::build('your-api-key')
     ->withBaseUrl('https://api.deepseek.com/v2')
     ->withModel(Models::CODER)
     ->withTemperature(1.2)
+    ->run();
+
+echo 'API Response:'.$response;
+```
+
+### Function Calling
+
+```php
+use DeepSeek\DeepSeekClient;
+use DeepSeek\Enums\Models;
+
+$response = DeepSeekClient::build('your-api-key')
+    ->withModel(Models::CHAT)
+    ->withTools([    
+        [
+            'type' => 'function',
+            'function' => [
+                'name' => 'get_weather',
+                'description' => 'Get weather of an location, the user shoud supply a location first',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'location' => [
+                            'type' => 'string',
+                            'description' => 'The city and state, e.g. San Francisco, CA',
+                        ],
+                    ],
+                    'required' => ['location'],
+                ],
+            ],
+        ],
+    ])
     ->run();
 
 echo 'API Response:'.$response;
