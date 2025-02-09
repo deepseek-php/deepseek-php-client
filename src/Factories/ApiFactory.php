@@ -3,7 +3,7 @@
 namespace DeepSeek\Factories;
 
 use DeepSeek\Contracts\Factories\ApiFactoryContract;
-use DeepSeek\Enums\Configs\DefaultConfigs;
+use DeepSeek\DeepSeekDefaultOptions;
 use DeepSeek\Enums\Requests\HeaderFlags;
 use GuzzleHttp\Client;
 
@@ -52,7 +52,7 @@ final class ApiFactory implements ApiFactoryContract
      */
     public function setBaseUri(?string $baseUrl = null): self
     {
-        $this->baseUrl = $baseUrl ? trim($baseUrl) : DefaultConfigs::BASE_URL->value;
+        $this->baseUrl = $baseUrl ? trim($baseUrl) : DeepSeekDefaultOptions::BASE_URL;
         return $this;
     }
 
@@ -78,7 +78,7 @@ final class ApiFactory implements ApiFactoryContract
      */
     public function setTimeout(?int $timeout = null): self
     {
-        $this->timeout = $timeout ?: (int)DefaultConfigs::TIMEOUT->value;
+        $this->timeout = $timeout ?: DeepSeekDefaultOptions::TIMEOUT;
         return $this;
     }
 
