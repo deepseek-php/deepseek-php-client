@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">DeepSeek PHP Client</h1>
   <p align="center">🚀 Community-Driven PHP SDK for DeepSeek AI API Integration</p>
-  
+
   <p align="center">
     <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">
       <img src="https://img.shields.io/packagist/v/deepseek-php/deepseek-php-client" alt="Latest Version">
@@ -29,6 +29,7 @@
   - [Advanced Configuration](#advanced-configuration)
   - [Use with Symfony HttpClient](#use-with-symfony-httpclient)
   - [Get Models List](#get-models-list)
+  - [Function Calling](#function-calling)
   - [Framework Integration](#-framework-integration)
 - [🆕 Migration Guide](#-migration-guide)
 - [📝 Changelog](#-changelog)
@@ -103,7 +104,7 @@ echo 'API Response:'.$response;
 
 ### Use with Symfony HttpClient
 the package already built with `symfony Http client`,  if you need to use package with `symfony` Http Client , it is easy to achieve that, just pass `clientType:'symfony'` with `build` function.
- 
+
 ex with symfony:
 
 ```php
@@ -127,6 +128,42 @@ $response = DeepSeekClient::build('your-api-key')
 
 echo $response; // {"object":"list","data":[{"id":"deepseek-chat","object":"model","owned_by":"deepseek"},{"id":"deepseek-reasoner","object":"model","owned_by":"deepseek"}]}
 ```
+
+### Function Calling
+
+Function Calling allows the model to call external tools to enhance its capabilities.
+
+[please check original DeepSeek Doc](https://api-docs.deepseek.com/guides/function_calling)
+
+```php
+use DeepSeek\DeepSeekClient;
+use DeepSeek\Enums\Models;
+
+$response = DeepSeekClient::build('your-api-key')
+    ->withModel(Models::CHAT)
+    ->withTools([    
+        [
+            'type' => 'function',
+            'function' => [
+                'name' => 'get_weather',
+                'description' => 'Get weather of an location, the user shoud supply a location first',
+                'parameters' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'location' => [
+                            'type' => 'string',
+                            'description' => 'The city and state, e.g. San Francisco, CA',
+                        ],
+                    ],
+                    'required' => ['location'],
+                ],
+            ],
+        ],
+    ])
+    ->run();
+
+echo 'API Response:'.$response;
+````
 
 ### 🛠 Framework Integration
 
@@ -178,7 +215,7 @@ Click the button bellow or [join here](https://t.me/deepseek_php_community) to b
 
 ## 🔒 Security
 
-**Report Vulnerabilities**: to [omaralwi2010@gmail.com](mailto:omaralwi2010@gmail.com)   
+**Report Vulnerabilities**: to [omaralwi2010@gmail.com](mailto:omaralwi2010@gmail.com)
 
 ---
 

@@ -58,6 +58,8 @@ class DeepSeekClient implements ClientContract
 
     protected ?string $endpointSuffixes;
 
+    protected array $tools = [];
+
     /**
      * Initialize the DeepSeekClient with a PSR-compliant HTTP client.
      *
@@ -81,6 +83,9 @@ class DeepSeekClient implements ClientContract
             QueryFlags::STREAM->value   => $this->stream,
             QueryFlags::TEMPERATURE->value   => $this->temperature,
         ];
+        if (count($this->tools)) {
+            $requestData[QueryFlags::TOOLS->value] = $this->tools;
+        }
         // Clear queries after sending
         $this->queries = [];
         $this->setResult((new Resource($this->httpClient, $this->endpointSuffixes))->sendRequest($requestData, $this->requestMethod));
@@ -111,13 +116,20 @@ class DeepSeekClient implements ClientContract
     /**
      * Add a query to the accumulated queries list.
      *
-     * @param string $content
+     * @param string|null $content
      * @param string|null $role
+     * @param string|null $toolCallId
+     * @param array|null $toolCalls
      * @return self The current instance for method chaining.
      */
-    public function query(string $content, ?string $role = "user"): self
+    public function query(
+        ?string $content = null,
+        ?string $role = null,
+        ?string $toolCallId = null,
+        ?array $toolCalls = null,
+    ): self
     {
-        $this->queries[] = $this->buildQuery($content, $role);
+        $this->queries[] = $this->buildQuery($content, $role, $toolCallId, $toolCalls);
         return $this;
     }
 
@@ -163,12 +175,33 @@ class DeepSeekClient implements ClientContract
         return $this;
     }
 
-    public function buildQuery(string $content, ?string $role = null): array
+    public function setTools(array $tools): self
     {
-        return [
+        $this->tools = $tools;
+        return $this;
+    }
+
+    public function buildQuery(
+    ?string $content = null,
+    ?string $role = null,
+    ?string $toolCallId = null,
+    ?array $toolCalls = null,
+): array
+    {
+        $query = [
             'role' => $role ?: QueryRoles::USER->value,
-            'content' => $content
         ];
+        if ($content !== null) {
+            $query['content'] = $content;
+        }
+        if ($toolCallId !== null) {
+            $query['tool_call_id'] = $toolCallId;
+        }
+        if ($toolCalls !== null) {
+            $query['tool_calls'] = $toolCalls;
+        }
+
+        return $query;
     }
 
     /**
