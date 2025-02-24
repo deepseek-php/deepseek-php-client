@@ -4,103 +4,83 @@ namespace DeepSeek\Factories;
 
 use DeepSeek\Contracts\Factories\ApiFactoryContract;
 use DeepSeek\Enums\Configs\DefaultConfigs;
+use DeepSeek\Enums\Requests\ClientTypes;
 use DeepSeek\Enums\Requests\HeaderFlags;
 use GuzzleHttp\Client;
+use Psr\Http\Client\ClientInterface;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpClient\Psr18Client;
+use RuntimeException;
+use InvalidArgumentException;
 
 final class ApiFactory implements ApiFactoryContract
 {
-    /**
-     * The API key for authentication.
-     *
-     * @var string
-     */
     protected string $apiKey;
-
-    /**
-     * The base URL for the API.
-     *
-     * @var string
-     */
     protected string $baseUrl;
-
-    /**
-     * The timeout value for the API request in seconds.
-     *
-     * @var int
-     */
     protected int $timeout;
+    protected array $clientConfig;
 
-    /**
-     * Returns an instance of the ApiFactory.
-     *
-     * This is a static factory method that creates a new instance of the class.
-     *
-     * @return self A new instance of the ApiFactory.
-     */
     public static function build(): self
     {
-        return new self;
+        return new self();
     }
 
-    /**
-     * Set the base URL for the API.
-     *
-     * If no URL is provided, the default base URL from the configuration is used.
-     *
-     * @param string|null $baseUrl The base URL to set (optional).
-     * @return self The instance of the self for method chaining.
-     */
     public function setBaseUri(?string $baseUrl = null): self
     {
         $this->baseUrl = $baseUrl ? trim($baseUrl) : DefaultConfigs::BASE_URL->value;
         return $this;
     }
 
-    /**
-     * Set the API key for authentication.
-     *
-     * @param string $apiKey The API key to set.
-     * @return self The instance of the self for method chaining.
-     */
     public function setKey(string $apiKey): self
     {
         $this->apiKey = trim($apiKey);
         return $this;
     }
 
-    /**
-     * Set the timeout for the API request.
-     *
-     * If no timeout is provided, the default timeout value from the configuration is used.
-     *
-     * @param int|null $timeout The timeout value in seconds (optional).
-     * @return self The instance of the self for method chaining.
-     */
     public function setTimeout(?int $timeout = null): self
     {
         $this->timeout = $timeout ?: (int)DefaultConfigs::TIMEOUT->value;
         return $this;
     }
 
-    /**
-     * Build and return the Guzzle Client instance.
-     *
-     * This method creates and configures a new Guzzle HTTP client instance
-     * using the provided base URL, timeout, and headers.
-     *
-     * @return Client A Guzzle client instance configured for the API.
-     */
-    public function run(): Client
+    public function initialize(): self
     {
-        $clientConfig = [
+        if (!isset($this->baseUrl)) {
+            $this->setBaseUri();
+        }
+
+        if (!isset($this->apiKey)) {
+            throw new RuntimeException('API key must be set using setKey() before initialization.');
+        }
+
+        if (!isset($this->timeout)) {
+            $this->setTimeout();
+        }
+
+        $this->clientConfig = [
             HeaderFlags::BASE_URL->value => $this->baseUrl,
             HeaderFlags::TIMEOUT->value  => $this->timeout,
             HeaderFlags::HEADERS->value  => [
                 HeaderFlags::AUTHORIZATION->value => 'Bearer ' . $this->apiKey,
-                HeaderFlags::CONTENT_TYPE->value => "application/json",
+                HeaderFlags::CONTENT_TYPE->value  => 'application/json',
             ],
         ];
 
-        return new Client($clientConfig);
+        return $this;
+    }
+
+    public function run(?string $clientType = null): ClientInterface
+    {
+        $clientType = $clientType ?? ClientTypes::GUZZLE->value;
+
+        if (!isset($this->clientConfig)) {
+            $this->initialize();
+        }
+
+        return match (strtolower($clientType)) {
+            ClientTypes::GUZZLE->value => new Client($this->clientConfig),
+            ClientTypes::SYMFONY->value => new Psr18Client(HttpClient::create($this->clientConfig)),
+            default => throw new InvalidArgumentException("Unsupported client type: {$clientType}")
+        };
     }
 }

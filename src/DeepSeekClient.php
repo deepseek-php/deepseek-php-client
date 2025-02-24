@@ -2,18 +2,19 @@
 
 namespace DeepSeek;
 
-use DeepSeek\Contracts\DeepseekClientContract;
+use DeepSeek\Contracts\ClientContract;
 use DeepSeek\Contracts\Models\ResultContract;
+use DeepSeek\Enums\Requests\ClientTypes;
+use DeepSeek\Enums\Requests\EndpointSuffixes;
 use DeepSeek\Resources\Resource;
 use Psr\Http\Client\ClientInterface;
 use DeepSeek\Factories\ApiFactory;
 use DeepSeek\Enums\Queries\QueryRoles;
 use DeepSeek\Enums\Requests\QueryFlags;
-use DeepSeek\Enums\Requests\HeaderFlags;
 use DeepSeek\Enums\Configs\TemperatureValues;
 use DeepSeek\Traits\Resources\{HasChat, HasCoder};
 
-class DeepSeekClient implements DeepseekClientContract
+class DeepSeekClient implements ClientContract
 {
     use HasChat, HasCoder;
 
@@ -47,13 +48,17 @@ class DeepSeekClient implements DeepseekClientContract
 
     protected float $temperature;
 
-    protected array $tools = [];
-
     /**
      * response result contract
      * @var ResultContract
      */
     protected ResultContract $result;
+
+    protected string $requestMethod;
+
+    protected ?string $endpointSuffixes;
+
+    protected array $tools = [];
 
     /**
      * Initialize the DeepSeekClient with a PSR-compliant HTTP client.
@@ -65,6 +70,8 @@ class DeepSeekClient implements DeepseekClientContract
         $this->httpClient = $httpClient;
         $this->model = null;
         $this->stream = false;
+        $this->requestMethod = 'POST';
+        $this->endpointSuffixes = EndpointSuffixes::CHAT->value;
         $this->temperature = (float) TemperatureValues::GENERAL_CONVERSATION->value;
     }
 
@@ -81,7 +88,7 @@ class DeepSeekClient implements DeepseekClientContract
         }
         // Clear queries after sending
         $this->queries = [];
-        $this->setResult((new Resource($this->httpClient))->sendRequest($requestData));
+        $this->setResult((new Resource($this->httpClient, $this->endpointSuffixes))->sendRequest($requestData, $this->requestMethod));
         return $this->getResult()->getContent();
     }
 
@@ -93,13 +100,15 @@ class DeepSeekClient implements DeepseekClientContract
      * @param int|null $timeout The timeout duration for requests in seconds (optional).
      * @return self A new instance of the DeepSeekClient.
      */
-    public static function build(string $apiKey, ?string $baseUrl = null, ?int $timeout = null): self
+    public static function build(string $apiKey, ?string $baseUrl = null, ?int $timeout = null, ?string $clientType = null): self
     {
+        $clientType = $clientType ?? ClientTypes::GUZZLE->value;
+
         $httpClient = ApiFactory::build()
             ->setBaseUri($baseUrl)
             ->setTimeout($timeout)
             ->setKey($apiKey)
-            ->run();
+            ->run($clientType);
 
         return new self($httpClient);
     }
@@ -121,6 +130,18 @@ class DeepSeekClient implements DeepseekClientContract
     ): self
     {
         $this->queries[] = $this->buildQuery($content, $role, $toolCallId, $toolCalls);
+        return $this;
+    }
+
+    /**
+     * get list of available models .
+     *
+     * @return self The current instance for method chaining.
+     */
+    public function getModelsList(): self
+    {
+        $this->endpointSuffixes = EndpointSuffixes::MODELS_LIST->value;
+        $this->requestMethod = 'GET';
         return $this;
     }
 
@@ -160,12 +181,12 @@ class DeepSeekClient implements DeepseekClientContract
         return $this;
     }
 
-    protected function buildQuery(
-        ?string $content = null,
-        ?string $role = null,
-        ?string $toolCallId = null,
-        ?array $toolCalls = null,
-    ): array
+    public function buildQuery(
+    ?string $content = null,
+    ?string $role = null,
+    ?string $toolCallId = null,
+    ?array $toolCalls = null,
+): array
     {
         $query = [
             'role' => $role ?: QueryRoles::USER->value,

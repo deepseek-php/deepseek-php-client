@@ -18,59 +18,57 @@ use DeepSeek\Traits\Queries\HasQueryParams;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Nyholm\Psr7\Factory\Psr17Factory;
 
 class Resource implements ResourceContract
 {
     use HasQueryParams;
 
-    /**
-     * HTTP client for making requests.
-     *
-     * @var ClientInterface
-     */
     protected ClientInterface $client;
+    protected ?string $endpointSuffixes;
+    protected RequestFactoryInterface $requestFactory;
+    protected StreamFactoryInterface $streamFactory;
 
-    /**
-     * Initialize the Resource with a Guzzle HTTP client.
-     *
-     * @param ClientInterface $client The HTTP client instance for making requests.
-     */
-    public function __construct(ClientInterface $client)
-    {
+    public function __construct(
+        ClientInterface $client,
+        ?string $endpointSuffixes = null,
+        ?RequestFactoryInterface $requestFactory = null,
+        ?StreamFactoryInterface $streamFactory = null
+    ) {
         $this->client = $client;
+        $this->endpointSuffixes = $endpointSuffixes ?: EndpointSuffixes::CHAT->value;
+        $this->requestFactory = $requestFactory ?: new Psr17Factory();
+        $this->streamFactory = $streamFactory ?: new Psr17Factory();
     }
 
-    /**
-     * Send a request to the API endpoint.
-     *
-     * This method sends a POST request to the API endpoint, including the query data
-     * and custom headers, and returns the response as a result contract.
-     *
-     * @param array $requestData The data to send in the request.
-     * @return ResultContract The response result.
-     *
-     */
-    public function sendRequest(array $requestData): ResultContract
+    public function sendRequest(array $requestData, ?string $requestMethod = 'POST'): ResultContract
     {
         try {
-            $response = $this->client->post($this->getEndpointSuffix(), [
-                'json' => $this->resolveHeaders($requestData),
-            ]);
+            $request = $this->requestFactory->createRequest(
+                $requestMethod,
+                $this->getEndpointSuffix()
+            );
+
+            if ($requestMethod === 'POST') {
+                $request = $request
+                    ->withHeader('Content-Type', 'application/json')
+                    ->withBody(
+                        $this->streamFactory->createStream(
+                            json_encode($this->resolveHeaders($requestData))
+                        ));
+            }
+
+            $response = $this->client->sendRequest($request);
 
             return (new SuccessResult())->setResponse($response);
         } catch (BadResponseException $badResponse) {
-
-            $response = $badResponse->getResponse();
-            return (new BadResult())->setResponse($response);
-        
+            return (new BadResult())->setResponse($badResponse->getResponse());
         } catch (GuzzleException $error) {
-            
             return new FailureResult($error->getCode(), $error->getMessage());
-
         } catch (\Exception $error) {
-
             return new FailureResult($error->getCode(), '{"error":"'.$error->getMessage().'"}');
-
         }
     }
 
@@ -119,7 +117,7 @@ class Resource implements ResourceContract
      */
     public function getEndpointSuffix(): string
     {
-        return EndpointSuffixes::CHAT->value;
+        return $this->endpointSuffixes;
     }
 
     /**

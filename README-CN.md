@@ -1,6 +1,6 @@
 <p align="center">
   <h1 align="center">DeepSeek PHP Client</h1>
-  <p align="center">🚀 Community-Driven PHP SDK for DeepSeek AI API Integration</p>
+  <p align="center">🚀 社区驱动的 PHP SDK，用于 DeepSeek AI 接口集成</p>
 
   <p align="center">
     <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">
@@ -17,59 +17,57 @@
     </a>
   </p>
 
-[AR](README-AR.md) | [CN](README-CN.md)
+[EN](README.md) | [AR](README-AR.md)
 
 </p>
 
-## Table of Contents
-- [✨ Features](#-features)
-- [📦 Installation](#-installation)
-- [🚀 Quick Start](#-quick-start)
-  - [Basic Usage](#basic-usage)
-  - [Advanced Configuration](#advanced-configuration)
-  - [Use with Symfony HttpClient](#use-with-symfony-httpclient)
-  - [Get Models List](#get-models-list)
-  - [Function Calling](#function-calling)
-  - [Framework Integration](#-framework-integration)
-- [🆕 Migration Guide](#-migration-guide)
-- [📝 Changelog](#-changelog)
-- [🧪 Testing](#-testing)
-- [🔒 Security](#-security)
-- [🤝 Contributors](#-contributors)
-- [📄 License](#-license)
+## 目录
+- [✨ 特性](#-特性)
+- [📦 安装](#-安装)
+- [🚀 快速入门](#-快速入门)
+    - [基本用法](#基本用法)
+    - [高级配置](#advanced-configuration)
+    - [Use with Symfony HttpClient](#use-with-symfony-httpclient)
+    - [获取模型列表](#获取模型列表)
+    - [框架集成](#-框架集成)
+- [🆕 迁移指南](#-迁移指南)
+- [📝 更新日志](#-更新日志)
+- [🧪 测试](#-测试)
+- [🔒 安全](#-安全)
+- [🤝 贡献者](#-贡献者)
+- [📄 许可](#-许可)
 
 ---
 
-## ✨ Features
+## ✨ 特性
 
-- **Seamless API Integration**: PHP-first interface for DeepSeek's AI capabilities.
-- **Fluent Builder Pattern**: Chainable methods for intuitive request building.
-- **Enterprise Ready**: PSR-18 compliant HTTP client integration.
-- **Model Flexibility**: Support for multiple DeepSeek models (Coder, Chat, etc.).
-- **Streaming Ready**: Built-in support for real-time response handling.
-- **Many Http Clients**: easy to use `Guzzle http client` (default) , or `symfony http client`.
-- **Framework Friendly**: Laravel & Symfony packages available.
+- **无缝 API 集成**: DeepSeek AI 功能的 PHP 优先接口
+- **构建器模式**: 直观的链接请求构建方法
+- **企业级别**: 符合 PSR-18 规范
+- **模型灵活性**: 支持多种 DeepSeek 模型（Coder、Chat 等）
+- **流式传输**: 内置对实时响应处理的支持
+- **框架友好**: 提供 Laravel 和 Symfony 包
 
 ---
 
-## 📦 Installation
+## 📦 安装
 
-Require the package via Composer:
+通过 Composer 安装:
 
 ```bash
 composer require deepseek-php/deepseek-php-client
 ```
 
-**Requirements**:
+**要求**:
 - PHP 8.1+
 
 ---
 
-## 🚀 Quick Start
+## 🚀 快速入门
 
-### Basic Usage
+### 基本用法
 
-Get started with just two lines of code:
+只需两行代码即可开始:
 
 ```php
 use DeepSeek\DeepSeekClient;
@@ -81,7 +79,7 @@ $response = DeepSeekClient::build('your-api-key')
 echo $response;
 ```
 
-📌 Defaults used:
+📌 默认配置:
 - Model: `deepseek-chat`
 - Temperature: 0.8
 
@@ -117,7 +115,7 @@ $client->query('Explain quantum computing in simple terms')
        ->run();
 ```
 
-### Get Models List
+### 获取模型列表
 
 ```php
 use DeepSeek\DeepSeekClient;
@@ -129,99 +127,44 @@ $response = DeepSeekClient::build('your-api-key')
 echo $response; // {"object":"list","data":[{"id":"deepseek-chat","object":"model","owned_by":"deepseek"},{"id":"deepseek-reasoner","object":"model","owned_by":"deepseek"}]}
 ```
 
-### Function Calling
-
-Function Calling allows the model to call external tools to enhance its capabilities.
-
-[please check original DeepSeek Doc](https://api-docs.deepseek.com/guides/function_calling)
-
-```php
-use DeepSeek\DeepSeekClient;
-use DeepSeek\Enums\Models;
-
-$response = DeepSeekClient::build('your-api-key')
-    ->withModel(Models::CHAT)
-    ->withTools([    
-        [
-            'type' => 'function',
-            'function' => [
-                'name' => 'get_weather',
-                'description' => 'Get weather of an location, the user shoud supply a location first',
-                'parameters' => [
-                    'type' => 'object',
-                    'properties' => [
-                        'location' => [
-                            'type' => 'string',
-                            'description' => 'The city and state, e.g. San Francisco, CA',
-                        ],
-                    ],
-                    'required' => ['location'],
-                ],
-            ],
-        ],
-    ])
-    ->run();
-
-echo 'API Response:'.$response;
-````
-
-### 🛠 Framework Integration
+### 🛠 框架集成
 
 ### [Laravel Deepseek Package](https://github.com/deepseek-php/deepseek-laravel)
 
----
-
-## 🚧 Migration Guide
-
-Upgrading from v1.x? Check our comprehensive [Migration Guide](MIGRATION.md) for breaking changes and upgrade instructions.
 
 ---
 
-## 📝 Changelog
+## 🚧 迁移指南
 
-Detailed release notes available in [CHANGELOG.md](CHANGELOG.md)
+从 v1.x 升级？请查看我们全面的 [迁移指南](MIGRATION.md) 了解重大变更和升级说明。
 
 ---
 
-## 🧪 Testing
+## 📝 更新日志
+
+详细的发布说明可在 [CHANGELOG.md](CHANGELOG.md) 查看。
+
+---
+
+## 🧪 测试
 
 ```bash
 ./vendor/bin/pest
 ```
 
-Test coverage coming in v2.1.
-
----
-<div>
-
-# 🐘✨ **DeepSeek PHP Community** ✨🐘
-
-Click the button bellow or [join here](https://t.me/deepseek_php_community) to be part of our growing community!
-
-[![Join Telegram](https://img.shields.io/badge/Join-Telegram-blue?style=for-the-badge&logo=telegram)](https://t.me/deepseek_php_community)
-
-
-### **Channel Structure** 🏗️
-- 🗨️ **General** - Daily chatter
-- 💡 **Ideas & Suggestions** - Shape the community's future
-- 📢 **Announcements & News** - Official updates & news
-- 🚀 **Releases & Updates** - Version tracking & migration support
-- 🐞 **Issues & Bug Reports** - Collective problem-solving
-- 🤝 **Pull Requests** - Code collaboration & reviews
-
-</div>
+测试覆盖范围涵盖 v2.1。
 
 ---
 
-## 🔒 Security
+## 🔒 安全
 
-**Report Vulnerabilities**: to [omaralwi2010@gmail.com](mailto:omaralwi2010@gmail.com)
+**报告漏洞**: [omaralwi2010@gmail.com](mailto:omaralwi2010@gmail.com)
 
 ---
 
-## 🤝  Contributors
+## 🤝  贡献者
 
-A huge thank you to these amazing people who have contributed to this project! 🎉💖
+非常感谢为这个项目做出贡献的人！ 🎉💖
 
 <table>
   <tr>
@@ -272,9 +215,9 @@ A huge thank you to these amazing people who have contributed to this project! �
     </td>
     <td align="center">
       <a href="https://github.com/VinchanGit">
-        <img src="https://avatars.githubusercontent.com/u/38177046?v=4" width="60px;" style="border-radius:50%;" alt="Vinchan"/>
+        <img src="https://avatars.githubusercontent.com/u/38177046?v=4" width="60px;" style="border-radius:50%;" alt="陈文锋"/>
         <br />
-        <b>Vinchan</b>
+        <b>陈文锋</b>
       </a>
       <br />
       ⭐ Contributor
@@ -282,10 +225,10 @@ A huge thank you to these amazing people who have contributed to this project! �
   </tr>
 </table>
 
-**Want to contribute?** Check out the [contributing guidelines](./CONTRIBUTING.md) and submit a pull request! 🚀
+**想要贡献？** 查看 [contributing guidelines](./CONTRIBUTING.md) 并提交拉取请求！ 🚀
 
 ---
 
-## 📄 License
+## 📄 许可
 
-This package is open-source software licensed under the [MIT License](LICENSE.md).
+基于 [MIT License](LICENSE.md) 开源协议。
