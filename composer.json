@@ -81,6 +81,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
+        "test:standard-src-code":"phpstan analyse --ansi src/",
         "lint": "pint -v",
         "test:lint": "pint --test -v",
         "test:types": "phpstan analyse --ansi",
