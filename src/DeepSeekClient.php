@@ -135,9 +135,9 @@ class DeepSeekClient implements ClientContract
      *
      * @return self The current instance for method chaining.
      */
-    public function resetQuery()
+    public function resetQueries()
     {
-        $this->query = [];
+        $this->queries = [];
         return $this;
     }
 
