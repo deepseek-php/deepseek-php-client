@@ -128,14 +128,16 @@ test('Test function calling use base data with real responses.', function () {
 
     // Arrange
     $response = json_decode($response, true);
+
     $message = $response['choices'][0]['message'];
     $firstFunction = $message['tool_calls'][0];
     if ($firstFunction['function']['name'] == "get_weather")
     {
-        $weather_data = get_weather($firstFunction['function']['arguments']['city']);
+        $args = json_decode($firstFunction['function']['arguments'], true);
+        $weather_data = get_weather($args['city']);
     }
     
-    $response2 = $client->queryToolCall(
+    $client2 = $client->queryToolCall(
             $message['tool_calls'],
             $message['content'],
             $message['role']
@@ -146,8 +148,8 @@ test('Test function calling use base data with real responses.', function () {
     );
     
     // Act
-    $response2 = $response2->run();
-    $result2 = $client->getResult();
+    $response2 = $client2->run();
+    $result2 = $client2->getResult();
 
     // Assert
     expect($response2)->not()->toBeEmpty($response2)
