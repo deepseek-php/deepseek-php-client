@@ -13,10 +13,12 @@ use DeepSeek\Enums\Queries\QueryRoles;
 use DeepSeek\Enums\Requests\QueryFlags;
 use DeepSeek\Enums\Configs\TemperatureValues;
 use DeepSeek\Traits\Resources\{HasChat, HasCoder};
+use DeepSeek\Traits\Client\HasToolsFunctionCalling;
 
 class DeepSeekClient implements ClientContract
 {
     use HasChat, HasCoder;
+    use HasToolsFunctionCalling;
 
     /**
      * PSR-18 HTTP client for making requests.
@@ -59,6 +61,12 @@ class DeepSeekClient implements ClientContract
     protected ?string $endpointSuffixes;
 
     /**
+     * Array of tools for using function calling.
+     * @var array|null $tools
+     */
+    protected ?array $tools;
+
+    /**
      * Initialize the DeepSeekClient with a PSR-compliant HTTP client.
      *
      * @param ClientInterface $httpClient The HTTP client used for making API requests.
@@ -71,6 +79,7 @@ class DeepSeekClient implements ClientContract
         $this->requestMethod = 'POST';
         $this->endpointSuffixes = EndpointSuffixes::CHAT->value;
         $this->temperature = (float) TemperatureValues::GENERAL_CONVERSATION->value;
+        $this->tools = null;
     }
 
     public function run(): string
@@ -80,9 +89,9 @@ class DeepSeekClient implements ClientContract
             QueryFlags::MODEL->value    => $this->model,
             QueryFlags::STREAM->value   => $this->stream,
             QueryFlags::TEMPERATURE->value   => $this->temperature,
+            QueryFlags::TOOLS->value  => $this->tools,
         ];
-        // Clear queries after sending
-        $this->queries = [];
+
         $this->setResult((new Resource($this->httpClient, $this->endpointSuffixes))->sendRequest($requestData, $this->requestMethod));
         return $this->getResult()->getContent();
     }
@@ -118,6 +127,17 @@ class DeepSeekClient implements ClientContract
     public function query(string $content, ?string $role = "user"): self
     {
         $this->queries[] = $this->buildQuery($content, $role);
+        return $this;
+    }
+    
+    /**
+     * Reset a queries list to empty.
+     *
+     * @return self The current instance for method chaining.
+     */
+    public function resetQueries()
+    {
+        $this->queries = [];
         return $this;
     }
 
@@ -173,7 +193,7 @@ class DeepSeekClient implements ClientContract
 
     /**
      * set result model
-     * @param \DeepseekPhp\Contracts\Models\ResultContract $result
+     * @param \DeepSeek\Contracts\Models\ResultContract $result
      * @return self The current instance for method chaining.
      */
     public function setResult(ResultContract $result)

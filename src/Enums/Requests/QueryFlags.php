@@ -8,4 +8,5 @@ enum QueryFlags: string
     case MODEL = 'model';
     case STREAM = 'stream';
     case TEMPERATURE = 'temperature';
+    case TOOLS = 'tools';
 }
