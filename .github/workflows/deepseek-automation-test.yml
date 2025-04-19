@@ -1,0 +1,25 @@
+name: DeepSeek Automation Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test-code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with: 
+          php-version: '8.1'
+      
+      - name: Install dependencies
+        run: composer install
+
+      - name: Run PHPStan for test standard source code.
+        run: composer run test:standard-src-code
