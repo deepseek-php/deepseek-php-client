@@ -108,7 +108,7 @@ class DeepSeekClient implements ClientContract
         return new self($httpClient);
     }
 
-        /**
+    /**
      * Sets the internal queries array to the provided array of messages.
      * Validates that each message has 'role' and 'content' keys with string values.
      *
