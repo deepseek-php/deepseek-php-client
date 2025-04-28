@@ -108,6 +108,41 @@ class DeepSeekClient implements ClientContract
         return new self($httpClient);
     }
 
+        /**
+     * Sets the internal queries array to the provided array of messages.
+     * Validates that each message has 'role' and 'content' keys with string values.
+     *
+     * @param array $messages The array containing message objects (each with 'role' and 'content').
+     * @return self
+     * @throws InvalidArgumentException If the messages array or its elements have an invalid structure.
+     */
+    public function buildQueries(array $messages): self
+    {
+        foreach ($messages as $index => $message) {
+            if (!is_array($message)) {
+                throw new InvalidArgumentException(
+                    "Messages array must contain only arrays. Found non-array element at index {$index}."
+                );
+            }
+
+            if (!isset($message['role']) || !isset($message['content'])) {
+                 throw new InvalidArgumentException(
+                     "Each message must have 'role' and 'content' keys. Missing key(s) at index {$index}."
+                 );
+             }
+
+            if (!is_string($message['role']) || !is_string($message['content'])) {
+                throw new InvalidArgumentException(
+                    "Message 'role' and 'content' must be strings. Invalid type found at index {$index}."
+                );
+            }
+
+        }
+
+        $this->queries = $messages;
+        return $this;
+    }
+
     /**
      * Add a query to the accumulated queries list.
      *
