@@ -29,6 +29,7 @@
   - [Advanced Configuration](#advanced-configuration)
   - [Use with Symfony HttpClient](#use-with-symfony-httpclient)
   - [Get Models List](#get-models-list)
+  - [Function Calling](#function-calling)
   - [Framework Integration](#-framework-integration)
 - [🆕 Migration Guide](#-migration-guide)
 - [📝 Changelog](#-changelog)
@@ -127,6 +128,14 @@ $response = DeepSeekClient::build('your-api-key')
 
 echo $response; // {"object":"list","data":[{"id":"deepseek-chat","object":"model","owned_by":"deepseek"},{"id":"deepseek-reasoner","object":"model","owned_by":"deepseek"}]}
 ```
+
+
+### Function Calling
+
+Function Calling allows the model to call external tools to enhance its capabilities.[[1]](https://api-docs.deepseek.com/guides/function_calling)
+
+You Can check the documentation for function calling in [FUNCTION-CALLING.md](docs/FUNCTION-CALLING.md)
+
 
 ### 🛠 Framework Integration
 
