@@ -97,6 +97,7 @@ $response = $client
     ->withModel(Models::CODER->value)
     ->withStream()
     ->setTemperature(1.2)
+    ->query('Explain quantum computing in simple terms')
     ->run();
 
 echo 'API Response:'.$response;
