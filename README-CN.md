@@ -25,11 +25,12 @@
 - [✨ 特性](#-特性)
 - [📦 安装](#-安装)
 - [🚀 快速入门](#-快速入门)
-    - [基本用法](#基本用法)
-    - [高级配置](#advanced-configuration)
-    - [Use with Symfony HttpClient](#use-with-symfony-httpclient)
-    - [获取模型列表](#获取模型列表)
-    - [框架集成](#-框架集成)
+  - [基本用法](#基本用法)
+  - [高级配置](#高级配置)
+  - [使用 Symfony HttpClient](#使用-symfony-httpclient)
+  - [获取模型列表](#获取模型列表)
+  - [函数调用](#函数调用)
+  - [框架集成](#-框架集成)
 - [🆕 迁移指南](#-迁移指南)
 - [📝 更新日志](#-更新日志)
 - [🧪 测试](#-测试)
@@ -95,6 +96,7 @@ $response = $client
     ->withModel(Models::CODER->value)
     ->withStream()
     ->withTemperature(1.2)
+    ->query('Explain quantum computing in simple terms')
     ->run();
 
 echo 'API Response:'.$response;
@@ -127,10 +129,31 @@ $response = DeepSeekClient::build('your-api-key')
 echo $response; // {"object":"list","data":[{"id":"deepseek-chat","object":"model","owned_by":"deepseek"},{"id":"deepseek-reasoner","object":"model","owned_by":"deepseek"}]}
 ```
 
+### 函数调用
+
+**函数调用**允许模型调用外部工具以增强其功能。
+你可以在文档中查看有关函数调用的详细信息：
+[FUNCTION-CALLING.md](docs/FUNCTION-CALLING.md)
+
+
 ### 🛠 框架集成
 
 ### [Laravel Deepseek Package](https://github.com/deepseek-php/deepseek-laravel)
 
+
+# 🐘✨ **DeepSeek PHP Community** ✨🐘
+
+Click the button bellow or [join here](https://t.me/deepseek_php_community) to be part of our growing community!
+
+[![Join Telegram](https://img.shields.io/badge/Join-Telegram-blue?style=for-the-badge&logo=telegram)](https://t.me/deepseek_php_community)
+
+### **Channel Structure** 🏗️
+- 🗨️ **General** - Daily chatter
+- 💡 **Ideas & Suggestions** - Shape the community's future
+- 📢 **Announcements & News** - Official updates & news
+- 🚀 **Releases & Updates** - Version tracking & migration support
+- 🐞 **Issues & Bug Reports** - Collective problem-solving
+- 🤝 **Pull Requests** - Code collaboration & reviews
 
 ---
 
