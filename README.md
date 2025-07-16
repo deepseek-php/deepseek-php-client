@@ -6,17 +6,19 @@
     <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">
       <img src="https://img.shields.io/packagist/v/deepseek-php/deepseek-php-client" alt="Latest Version">
     </a>
+    <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">
+      <img src="https://img.shields.io/packagist/dt/deepseek-php/deepseek-php-client" alt="Total Downloads">
+    </a>
     <a href="https://php.net">
       <img src="https://img.shields.io/badge/PHP-8.1%2B-blue" alt="PHP Version">
     </a>
     <a href="LICENSE.md">
       <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="License">
     </a>
-    <a href="https://github.com/deepseek-php/deepseek-php-client/actions">
-      <img src="https://img.shields.io/github/actions/workflow/status/deepseek-php/deepseek-php-client/tests.yml" alt="Tests Status">
+    <a href="https://github.com/deepseek-php/deepseek-php-client/stargazers">
+      <img src="https://img.shields.io/github/stars/deepseek-php/deepseek-php-client?style=social" alt="GitHub Stars">
     </a>
-  </p>
-
+  
 [AR](README-AR.md) | [CN](README-CN.md)
 
 </p>
