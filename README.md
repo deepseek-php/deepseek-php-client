@@ -1,6 +1,6 @@
 <p align="center">
   <h1 align="center">DeepSeek PHP Client</h1>
-  <p align="center">🚀 Community-Driven PHP SDK for DeepSeek AI API Integration</p>
+  <p align="center">🚀 Community-Driven PHP Client for DeepSeek AI API Integration</p>
   
   <p align="center">
     <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">

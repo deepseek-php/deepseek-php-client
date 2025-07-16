@@ -1,19 +1,22 @@
 <p align="center">
-  <h1 align="center">DeepSeek PHP Client</h1>
-  <p align="center">🚀 社区驱动的 PHP SDK，用于 DeepSeek AI 接口集成</p>
-
+  <h1 align="center">DeepSeek PHP 客户端</h1>
+  <p align="center">🚀 由社区驱动的 PHP SDK，用于集成 DeepSeek AI API</p>
+  
   <p align="center">
     <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">
-      <img src="https://img.shields.io/packagist/v/deepseek-php/deepseek-php-client" alt="Latest Version">
+      <img src="https://img.shields.io/packagist/v/deepseek-php/deepseek-php-client" alt="最新版本">
+    </a>
+    <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">
+      <img src="https://img.shields.io/packagist/dt/deepseek-php/deepseek-php-client" alt="总下载次数">
     </a>
     <a href="https://php.net">
-      <img src="https://img.shields.io/badge/PHP-8.1%2B-blue" alt="PHP Version">
+      <img src="https://img.shields.io/badge/PHP-8.1%2B-blue" alt="PHP 版本">
     </a>
     <a href="LICENSE.md">
-      <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="License">
+      <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="许可证">
     </a>
-    <a href="https://github.com/deepseek-php/deepseek-php-client/actions">
-      <img src="https://img.shields.io/github/actions/workflow/status/deepseek-php/deepseek-php-client/tests.yml" alt="Tests Status">
+    <a href="https://github.com/deepseek-php/deepseek-php-client/stargazers">
+      <img src="https://img.shields.io/github/stars/deepseek-php/deepseek-php-client?style=social" alt="GitHub 收藏数">
     </a>
   </p>
 

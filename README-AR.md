@@ -1,19 +1,22 @@
 <p align="center">
-  <h1 align="center">عميل DeepSeek PHP</h1>
-  <p align="center">🚀 حزمة SDK لـ PHP مدعومة من المجتمع لتكامل واجهة برمجة التطبيقات الذكية DeepSeek</p>
+  <h1 align="center">عميل DeepSeek بلغة PHP</h1>
+  <p align="center">🚀 حزمة PHP مفتوحة المصدر ومدعومة من المجتمع للتكامل مع واجهة DeepSeek API</p>
   
   <p align="center">
     <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">
       <img src="https://img.shields.io/packagist/v/deepseek-php/deepseek-php-client" alt="أحدث إصدار">
     </a>
+    <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">
+      <img src="https://img.shields.io/packagist/dt/deepseek-php/deepseek-php-client" alt="إجمالي التحميلات">
+    </a>
     <a href="https://php.net">
-      <img src="https://img.shields.io/badge/PHP-8.1%2B-blue" alt="نسخة PHP">
+      <img src="https://img.shields.io/badge/PHP-8.1%2B-blue" alt="إصدار PHP">
     </a>
     <a href="LICENSE.md">
-      <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="الرخصة">
+      <img src="https://img.shields.io/badge/license-MIT-brightgreen" alt="الترخيص">
     </a>
-    <a href="https://github.com/deepseek-php/deepseek-php-client/actions">
-      <img src="https://img.shields.io/github/actions/workflow/status/deepseek-php/deepseek-php-client/tests.yml" alt="حالة الاختبارات">
+    <a href="https://github.com/deepseek-php/deepseek-php-client/stargazers">
+      <img src="https://img.shields.io/github/stars/deepseek-php/deepseek-php-client?style=social" alt="النجوم على GitHub">
     </a>
   </p>
 
