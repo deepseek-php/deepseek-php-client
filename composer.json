@@ -47,9 +47,9 @@
             "name": "Omar Alalwi",
             "email": "omaralwi2010@gmail.com",
             "role": "creator"
-        }
+        }g
     ],
-    "version": "2.0.4",
+    "version": "2.0.5",
     "require": {
         "php": "^8.1.0",
         "nyholm/psr7": "^1.8",

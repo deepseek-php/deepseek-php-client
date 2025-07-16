@@ -95,8 +95,6 @@ class DeepSeekClient implements ClientContract
             QueryFlags::TOOLS->value  => $this->tools,
         ];
 
-        \Log::info(['debug info: this is $requestData :' => $requestData ]);
-
         $this->setResult((new Resource($this->httpClient, $this->endpointSuffixes))->sendRequest($requestData, $this->requestMethod));
         return $this->getResult()->getContent();
     }
