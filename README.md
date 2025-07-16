@@ -18,10 +18,9 @@
     <a href="https://github.com/deepseek-php/deepseek-php-client/stargazers">
       <img src="https://img.shields.io/github/stars/deepseek-php/deepseek-php-client?style=social" alt="GitHub Stars">
     </a>
-  
-[AR](README-AR.md) | [CN](README-CN.md)
+  </p>
 
-</p>
+[AR](README-AR.md) | [CN](README-CN.md)
 
 ## Table of Contents
 - [✨ Features](#-features)
@@ -29,6 +28,7 @@
 - [🚀 Quick Start](#-quick-start)
   - [Basic Usage](#basic-usage)
   - [Advanced Configuration](#advanced-configuration)
+  - [important warning with json mode](#-deepseek-json-mode-requirement)
   - [Use with Symfony HttpClient](#use-with-symfony-httpclient)
   - [Get Models List](#get-models-list)
   - [Function Calling](#function-calling)
@@ -100,11 +100,46 @@ $response = $client
     ->withStream()
     ->setTemperature(1.2)
     ->setMaxTokens(8192)
+    ->setResponseFormat('text') // or "json_object"  with careful .
     ->query('Explain quantum computing in simple terms')
     ->run();
 
 echo 'API Response:'.$response;
 ```
+
+## ⚠️ DeepSeek JSON Mode Requirement
+
+When using:
+
+```php
+->setResponseFormat('json_object')
+```
+
+Your prompt **must contain the word `"json"`** in some form. Otherwise, the API will reject the request with the following error:
+
+> `"Prompt must contain the word 'json' in some form to use 'response_format' of type 'json_object'"`
+
+---
+
+### 🚫 Incorrect Usage
+
+```php
+->setResponseFormat('json_object')
+->query('Explain quantum computing in simple terms')
+```
+
+### ✅ Correct Usage
+
+```php
+->setResponseFormat('json_object')
+->query('Respond in valid JSON format. Explain quantum computing in simple terms.')
+```
+
+> ✅ **Tip**: For best results, also provide a JSON example or explicitly say:
+> *"Respond only in valid JSON."*
+
+
+---
 
 ### Use with Symfony HttpClient
 the package already built with `symfony Http client`,  if you need to use package with `symfony` Http Client , it is easy to achieve that, just pass `clientType:'symfony'` with `build` function.

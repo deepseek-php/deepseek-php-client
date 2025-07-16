@@ -13,4 +13,5 @@ enum TemperatureValues: string
     case CREATIVE_WRITING = "1.5";
     case POETRY = "1.6";
     case MAX_TOKENS = "4096";
+    case RESPONSE_FORMAT_TYPE = "text";
 }
