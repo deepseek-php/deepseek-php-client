@@ -49,6 +49,7 @@ class DeepSeekClient implements ClientContract
     protected bool $stream;
 
     protected float $temperature;
+    protected int $maxTokens;
 
     /**
      * response result contract
@@ -79,6 +80,7 @@ class DeepSeekClient implements ClientContract
         $this->requestMethod = 'POST';
         $this->endpointSuffixes = EndpointSuffixes::CHAT->value;
         $this->temperature = (float) TemperatureValues::GENERAL_CONVERSATION->value;
+        $this->maxTokens = (int) TemperatureValues::MAX_TOKENS->value;
         $this->tools = null;
     }
 
@@ -89,8 +91,11 @@ class DeepSeekClient implements ClientContract
             QueryFlags::MODEL->value    => $this->model,
             QueryFlags::STREAM->value   => $this->stream,
             QueryFlags::TEMPERATURE->value   => $this->temperature,
+            QueryFlags::MAX_TOKENS->value   => $this->maxTokens,
             QueryFlags::TOOLS->value  => $this->tools,
         ];
+
+        \Log::info(['debug info: this is $requestData :' => $requestData ]);
 
         $this->setResult((new Resource($this->httpClient, $this->endpointSuffixes))->sendRequest($requestData, $this->requestMethod));
         return $this->getResult()->getContent();
@@ -180,6 +185,12 @@ class DeepSeekClient implements ClientContract
     public function setTemperature(float $temperature): self
     {
         $this->temperature = $temperature;
+        return $this;
+    }
+
+    public function setMaxTokens(int $maxTokens): self
+    {
+        $this->maxTokens = $maxTokens;
         return $this;
     }
 

@@ -99,6 +99,7 @@ $response = $client
     ->withModel(Models::CODER->value)
     ->withStream()
     ->setTemperature(1.2)
+    ->setMaxTokens(8192)
     ->query('Explain quantum computing in simple terms')
     ->run();
 
