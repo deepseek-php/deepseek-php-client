@@ -8,5 +8,6 @@ enum QueryFlags: string
     case MODEL = 'model';
     case STREAM = 'stream';
     case TEMPERATURE = 'temperature';
+    case MAX_TOKENS = 'max_tokens';
     case TOOLS = 'tools';
 }
