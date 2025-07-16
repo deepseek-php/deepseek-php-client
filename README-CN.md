@@ -22,14 +22,13 @@
 
 [EN](README.md) | [AR](README-AR.md)
 
-</p>
-
 ## 目录
 - [✨ 特性](#-特性)
 - [📦 安装](#-安装)
 - [🚀 快速入门](#-快速入门)
   - [基本用法](#基本用法)
   - [高级配置](#高级配置)
+  - [使用 JSON 模式的重要警告](#-deepseek-json-模式使用要求)
   - [使用 Symfony HttpClient](#使用-symfony-httpclient)
   - [获取模型列表](#获取模型列表)
   - [函数调用](#函数调用)
@@ -100,11 +99,46 @@ $response = $client
     ->withStream()
     ->withTemperature(1.2)
     ->setMaxTokens(8192)
+    ->setResponseFormat('text')
     ->query('Explain quantum computing in simple terms')
     ->run();
 
 echo 'API Response:'.$response;
 ```
+
+
+## ⚠️ DeepSeek JSON 模式使用要求
+
+当使用：
+
+```php
+->setResponseFormat('json_object')
+```
+
+你的提示语（prompt）**必须包含 "json" 这个词**，否则 API 会返回以下错误：
+
+> `"Prompt must contain the word 'json' in some form to use 'response_format' of type 'json_object'"`
+
+---
+
+### 🚫 错误示例
+
+```php
+->setResponseFormat('json_object')
+->query('用简单的语言解释量子计算')
+```
+
+### ✅ 正确示例
+
+```php
+->setResponseFormat('json_object')
+->query('请以有效的 JSON 格式回答，并用简单语言解释量子计算。')
+```
+
+> ✅ **建议**：为了获得更好的结果，最好也在提示中提供一个 JSON 示例，并强调 “只返回 JSON”。
+
+
+---
 
 ### Use with Symfony HttpClient
 the package already built with `symfony Http client`,  if you need to use package with `symfony` Http Client , it is easy to achieve that, just pass `clientType:'symfony'` with `build` function.

@@ -50,6 +50,7 @@ class DeepSeekClient implements ClientContract
 
     protected float $temperature;
     protected int $maxTokens;
+    protected string $responseFormatType;
 
     /**
      * response result contract
@@ -81,6 +82,7 @@ class DeepSeekClient implements ClientContract
         $this->endpointSuffixes = EndpointSuffixes::CHAT->value;
         $this->temperature = (float) TemperatureValues::GENERAL_CONVERSATION->value;
         $this->maxTokens = (int) TemperatureValues::MAX_TOKENS->value;
+        $this->responseFormatType = TemperatureValues::RESPONSE_FORMAT_TYPE->value;
         $this->tools = null;
     }
 
@@ -93,6 +95,9 @@ class DeepSeekClient implements ClientContract
             QueryFlags::TEMPERATURE->value   => $this->temperature,
             QueryFlags::MAX_TOKENS->value   => $this->maxTokens,
             QueryFlags::TOOLS->value  => $this->tools,
+            QueryFlags::RESPONSE_FORMAT->value  => [
+                'type' => $this->responseFormatType
+            ],
         ];
 
         $this->setResult((new Resource($this->httpClient, $this->endpointSuffixes))->sendRequest($requestData, $this->requestMethod));
@@ -189,6 +194,12 @@ class DeepSeekClient implements ClientContract
     public function setMaxTokens(int $maxTokens): self
     {
         $this->maxTokens = $maxTokens;
+        return $this;
+    }
+
+    public function setResponseFormat(string $type): self
+    {
+        $this->responseFormatType = $type;
         return $this;
     }
 
