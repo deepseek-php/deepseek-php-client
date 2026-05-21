@@ -37,7 +37,6 @@
 - [📝 更新日志](#-更新日志)
 - [🧪 测试](#-测试)
 - [🔒 安全](#-安全)
-- [🤝 贡献者](#-贡献者)
 - [📄 许可](#-许可)
 
 ---
@@ -223,72 +222,7 @@ Click the button bellow or [join here](https://t.me/deepseek_php_community) to b
 
 ---
 
-## 🤝  贡献者
 
-非常感谢为这个项目做出贡献的人！ 🎉💖
-
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/omaralalwi">
-        <img src="https://avatars.githubusercontent.com/u/25439498?v=4" width="60px;" style="border-radius:50%;" alt="Omar AlAlwi"/>
-        <br />
-        <b>Omar AlAlwi</b>
-      </a>
-      <br />
-      🏆 Creator
-    </td>
-    <td align="center">
-      <a href="https://github.com/aymanalhattami">
-        <img src="https://avatars.githubusercontent.com/u/34315778?v=4" width="60px;" style="border-radius:50%;" alt="Ayman Alhattami"/>
-        <br />
-        <b>Ayman Alhattami</b>
-      </a>
-      <br />
-      ⭐ Contributor
-    </td>
-    <td align="center">
-      <a href="https://github.com/moassaad">
-        <img src="https://avatars.githubusercontent.com/u/155223476?v=4" width="60px;" style="border-radius:50%;" alt="Mohammad Asaad"/>
-        <br />
-        <b>Mohammad Asaad</b>
-      </a>
-      <br />
-      ⭐ Contributor
-    </td>
-    <td align="center">
-      <a href="https://github.com/OpadaAlzaiede">
-        <img src="https://avatars.githubusercontent.com/u/48367429?v=4" width="60px;" style="border-radius:50%;" alt="Opada Alzaiede"/>
-        <br />
-        <b>Opada Alzaiede</b>
-      </a>
-      <br />
-      ⭐ Contributor
-    </td>
-    <td align="center">
-      <a href="https://github.com/hishamco">
-        <img src="https://avatars.githubusercontent.com/u/3237266?v=4" width="60px;" style="border-radius:50%;" alt="Hisham Bin Ateya"/>
-        <br />
-        <b>Hisham Bin Ateya</b>
-      </a>
-      <br />
-      ⭐ Contributor
-    </td>
-    <td align="center">
-      <a href="https://github.com/VinchanGit">
-        <img src="https://avatars.githubusercontent.com/u/38177046?v=4" width="60px;" style="border-radius:50%;" alt="陈文锋"/>
-        <br />
-        <b>陈文锋</b>
-      </a>
-      <br />
-      ⭐ Contributor
-    </td>
-  </tr>
-</table>
-
-**想要贡献？** 查看 [contributing guidelines](./CONTRIBUTING.md) 并提交拉取请求！ 🚀
-
----
 
 ## 📄 许可
 
