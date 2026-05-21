@@ -1,6 +1,6 @@
 <p align="center">
 <h1 align="center">DeepSeek PHP Client</h1>
-<p align="center">🚀 Modern, Community-Driven, and framework-friendly PHP client for the DeepSeek AI API.</p>
+<p align="center">🚀⚡️ A community-driven, open-source PHP client for DeepSeek AI, officially listed in the DeepSeek API documentation and built for expressive, production-ready AI integrations.</p>
 
   <p align="center">
     <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">
