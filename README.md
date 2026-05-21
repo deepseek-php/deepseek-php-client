@@ -1,7 +1,7 @@
 <p align="center">
-  <h1 align="center">DeepSeek PHP Client</h1>
-  <p align="center">🚀 Community-Driven PHP Client for DeepSeek AI API Integration</p>
-  
+<h1 align="center">DeepSeek PHP Client</h1>
+<p align="center">🚀 Modern, Community-Driven, and framework-friendly PHP client for the DeepSeek AI API.</p>
+
   <p align="center">
     <a href="https://packagist.org/packages/deepseek-php/deepseek-php-client">
       <img src="https://img.shields.io/packagist/v/deepseek-php/deepseek-php-client" alt="Latest Version">
