@@ -46,10 +46,17 @@
 - **Seamless API Integration**: PHP-first interface for DeepSeek's AI capabilities.
 - **Fluent Builder Pattern**: Chainable methods for intuitive request building.
 - **Enterprise Ready**: PSR-18 compliant HTTP client integration.
-- **Model Flexibility**: Support for multiple DeepSeek models (Coder, Chat, etc.).
+- **Latest DeepSeek V4 Models**: First-class support for `deepseek-v4-pro` and `deepseek-v4-flash` with 1M-token context windows and thinking / non-thinking modes.
 - **Streaming Ready**: Built-in support for real-time response handling.
 - **Many Http Clients**: easy to use `Guzzle http client` (default) , or `symfony http client`.
 - **Framework Friendly**: Laravel & Symfony packages available.
+
+> **Supported Models**
+>
+> - `Models::V4_PRO` — flagship 1.6T/49B-active model, max 384K output tokens.
+> - `Models::V4_FLASH` — fast, economical 284B/13B-active model, max 384K output tokens.
+>
+> Legacy `Models::CHAT`, `Models::CODER`, `Models::R1`, and `Models::R1Zero` are deprecated and will be removed in v3.0.0. The `deepseek-chat` and `deepseek-reasoner` aliases retire from the DeepSeek API on **2026-07-24**.
 
 ---
 
@@ -83,8 +90,10 @@ echo $response;
 ```
 
 📌 Defaults used:
-- Model: `deepseek-chat`
-- Temperature: 0.8
+- Model: API default (no `model` field sent unless you call `withModel()`)
+- Temperature: 1.3 (`TemperatureValues::GENERAL_CONVERSATION`)
+- Max tokens: 4096
+- Response format: `text`
 
 ### Advanced Configuration
 
@@ -92,10 +101,10 @@ echo $response;
 use DeepSeek\DeepSeekClient;
 use DeepSeek\Enums\Models;
 
-$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com/v3', timeout:30, clientType:'guzzle');
+$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com', timeout:30, clientType:'guzzle');
 
 $response = $client
-    ->withModel(Models::CODER->value)
+    ->withModel(Models::V4_PRO->value)
     ->withStream()
     ->setTemperature(1.2)
     ->setMaxTokens(8192)
@@ -149,7 +158,7 @@ ex with symfony:
 //  with defaults baseUrl and timeout
 $client = DeepSeekClient::build('your-api-key', clientType:'symfony')
 // with customization
-$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com/v3', timeout:30, clientType:'symfony');
+$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com', timeout:30, clientType:'symfony');
 
 $client->query('Explain quantum computing in simple terms')
        ->run();
@@ -164,7 +173,16 @@ $response = DeepSeekClient::build('your-api-key')
     ->getModelsList()
     ->run();
 
-echo $response; // {"object":"list","data":[{"id":"deepseek-chat","object":"model","owned_by":"deepseek"},{"id":"deepseek-reasoner","object":"model","owned_by":"deepseek"}]}
+echo $response;
+// {
+//   "object": "list",
+//   "data": [
+//     {"id": "deepseek-v4-pro",   "object": "model", "owned_by": "deepseek"},
+//     {"id": "deepseek-v4-flash", "object": "model", "owned_by": "deepseek"},
+//     {"id": "deepseek-chat",     "object": "model", "owned_by": "deepseek"},     // deprecated, retires 2026-07-24
+//     {"id": "deepseek-reasoner", "object": "model", "owned_by": "deepseek"}      // deprecated, retires 2026-07-24
+//   ]
+// }
 ```
 
 
