@@ -53,7 +53,7 @@ Output response like.
     "id": "chat_12345",
     "object": "chat.completion",
     "created": 1677654321,
-    "model": "deepseek-chat",
+    "model": "deepseek-v4-pro",
     "choices": [
         {
             "index": 0,
@@ -136,7 +136,7 @@ Request like
             "content": "{\"temperature\":22,\"condition\":\"Sunny\"}"
         }
     ],
-    "model": "deepseek-chat",
+    "model": "deepseek-v4-pro",
     "stream": false,
     "temperature": 1.3,
     "tools": [
@@ -176,7 +176,7 @@ Output response like :-
     "id": "chat_67890",
     "object": "chat.completion",
     "created": 1677654322,
-    "model": "deepseek-chat",
+    "model": "deepseek-v4-pro",
     "choices": [
         {
             "index": 0,
@@ -190,3 +190,10 @@ Output response like :-
 }
 ```
 
+---
+
+### Thinking-mode caveat
+
+When using V4 models with thinking mode enabled (or the legacy `DeepSeek-R1`), assistant responses include a `reasoning_content` field at the same level as `content`. **This field MUST be echoed back on the next tool turn**; otherwise the DeepSeek API returns HTTP 400.
+
+See the [DeepSeek reasoning model docs](https://api-docs.deepseek.com/guides/reasoning_model) for details. Helpers for reading `reasoning_content` off the response and passing it back into the next request will land in `v2.2.0` together with `setThinking()` / `setReasoningEffort()`.

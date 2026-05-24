@@ -7,8 +7,8 @@ namespace DeepSeek\Resources;
 use DeepSeek\Contracts\Models\ResultContract;
 use DeepSeek\Contracts\Resources\ResourceContract;
 use DeepSeek\Enums\Configs\DefaultConfigs;
-use DeepSeek\Enums\Models;
 use DeepSeek\Enums\Data\DataTypes;
+use DeepSeek\Enums\Models;
 use DeepSeek\Enums\Requests\EndpointSuffixes;
 use DeepSeek\Enums\Requests\QueryFlags;
 use DeepSeek\Models\BadResult;
@@ -17,18 +17,21 @@ use DeepSeek\Models\SuccessResult;
 use DeepSeek\Traits\Queries\HasQueryParams;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
+use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Nyholm\Psr7\Factory\Psr17Factory;
 
 class Resource implements ResourceContract
 {
     use HasQueryParams;
 
     protected ClientInterface $client;
+
     protected ?string $endpointSuffixes;
+
     protected RequestFactoryInterface $requestFactory;
+
     protected StreamFactoryInterface $streamFactory;
 
     public function __construct(
@@ -39,8 +42,8 @@ class Resource implements ResourceContract
     ) {
         $this->client = $client;
         $this->endpointSuffixes = $endpointSuffixes ?: EndpointSuffixes::CHAT->value;
-        $this->requestFactory = $requestFactory ?: new Psr17Factory();
-        $this->streamFactory = $streamFactory ?: new Psr17Factory();
+        $this->requestFactory = $requestFactory ?: new Psr17Factory;
+        $this->streamFactory = $streamFactory ?: new Psr17Factory;
     }
 
     public function sendRequest(array $requestData, ?string $requestMethod = 'POST'): ResultContract
@@ -62,9 +65,9 @@ class Resource implements ResourceContract
 
             $response = $this->client->sendRequest($request);
 
-            return (new SuccessResult())->setResponse($response);
+            return (new SuccessResult)->setResponse($response);
         } catch (BadResponseException $badResponse) {
-            return (new BadResult())->setResponse($badResponse->getResponse());
+            return (new BadResult)->setResponse($badResponse->getResponse());
         } catch (GuzzleException $error) {
             return new FailureResult($error->getCode(), $error->getMessage());
         } catch (\Exception $error) {
@@ -78,7 +81,7 @@ class Resource implements ResourceContract
      * This method merges the given query data with custom headers that are
      * prepared for the request.
      *
-     * @param array $requestData The data to send in the request.
+     * @param  array  $requestData  The data to send in the request.
      * @return array The merged request data with default headers.
      */
     protected function resolveHeaders(array $requestData): array
@@ -92,7 +95,7 @@ class Resource implements ResourceContract
      * This method loops through the query parameters and applies the appropriate
      * type conversion before returning the final headers.
      *
-     * @param array $query The data to send in the request.
+     * @param  array  $query  The data to send in the request.
      * @return array The custom headers for the request.
      */
     public function prepareCustomHeaderParams(array $query): array
@@ -129,7 +132,7 @@ class Resource implements ResourceContract
      */
     public function getDefaultModel(): string
     {
-        return Models::CHAT->value;
+        return Models::V4_FLASH->value;
     }
 
     /**
@@ -142,7 +145,7 @@ class Resource implements ResourceContract
      */
     public function getDefaultStream(): bool
     {
-        return DefaultConfigs::STREAM->value === 'true';
+        return filter_var(DefaultConfigs::STREAM->value, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
