@@ -17,6 +17,6 @@ class Coder extends Resource
      */
     public function getDefaultModel(): string
     {
-        return Models::CODER->value;
+        return Models::V4_FLASH->value;
     }
 }

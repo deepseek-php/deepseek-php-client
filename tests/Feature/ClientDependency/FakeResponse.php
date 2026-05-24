@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\ClientDependency;
 
-class FakeResponse 
+class FakeResponse
 {
     public function toolFunctionCalling()
     {
-        return <<<responseAPI
+        return <<<'responseAPI'
             {
                 "id": "930c60df-bf64-41c9-a88e-3ec75f81e00e",
                 "choices": [
@@ -40,9 +40,10 @@ class FakeResponse
             }
         responseAPI;
     }
+
     public function resultToolFunctionCalling()
     {
-        return <<<responseAPI
+        return <<<'responseAPI'
             {
                 "id": "930c60df-bf64-41c9-a88e-3ec75f81e00e",
                 "choices": [

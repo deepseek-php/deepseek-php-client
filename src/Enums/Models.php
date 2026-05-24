@@ -14,6 +14,14 @@ enum Models: string
 
     /**
      * @deprecated since 2.1.0, will be removed in 3.0.0.
+     * The 'deepseek-reasoner' alias retires from the DeepSeek API on 2026-07-24
+     * (currently routes to deepseek-v4-flash thinking mode).
+     * Use Models::V4_FLASH with thinking mode instead.
+     */
+    case REASONER = 'deepseek-reasoner';
+
+    /**
+     * @deprecated since 2.1.0, will be removed in 3.0.0.
      * The 'deepseek-coder' model no longer exists in the DeepSeek API.
      * Use Models::V4_PRO or Models::V4_FLASH instead.
      */
