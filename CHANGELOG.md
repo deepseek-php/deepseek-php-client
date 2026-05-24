@@ -18,7 +18,11 @@ This package is used in 100k+ production installs. We take backward compatibilit
 - No published interface ([`ClientContract`](src/Contracts/ClientContract.php), `ResourceContract`, `ResultContract`, `ApiFactoryContract`) will gain new required methods. New methods on the client implementation will be exposed via separate, additive interfaces.
 - Default behavior of existing methods will not silently change in ways that affect cost, output, or correctness (e.g. raising default `max_tokens`).
 
-**What's coming in `v2.1.x`:** Every new DeepSeek API feature (V4 models, thinking mode, FIM completion, Anthropic format, user balance, `stop` / `top_p` / `tool_choice` / `logprobs` / `user_id`, chat prefix completion, etc.) will be delivered as **additive** new methods, optional parameters, and enum cases. Bug fixes (`/v3` base URL, ignored params in `chat()` / `code()`, keep-alive line stripping) are also in scope.
+**What's been delivered in the `v2.x` line so far:**
+- **v2.1.0** — V4 models, base-URL fix, `chat()` / `code()` parameter wiring, keep-alive line stripping.
+- **v2.2.0** — thinking mode (`setThinking`, `setReasoningEffort`), `setStop`, `setTopP`, `setToolChoice` (including the previously missing `"required"` mode), `setLogprobs`, `setTopLogprobs`, `setUserId`, OpenAI-spec `name` field on messages, and the `setStrictTool` helper.
+
+**What's still coming in the `v2.x` line:** FIM completion, real SSE streaming, chat prefix completion (Beta), user balance endpoint, rate-limit handling, response-introspection accessors, and additional DX helpers — all additive.
 
 **What's reserved for `v3.0.0`:** Removing deprecated `Models::CODER` / `Models::R1` / `Models::R1Zero`, removing the `Coder` class and `HasCoder` trait, raising default `max_tokens`, retyping `run()` to return a structured DTO, expanding `ClientContract` to match the implementation. All of these will be announced via `@deprecated` notices throughout `v2.x` and shipped with a complete migration guide in [MIGRATION.md](MIGRATION.md).
 
@@ -26,16 +30,12 @@ See [TODO.md](TODO.md) for the full feature gap analysis with per-item BC classi
 
 ---
 
-## [Unreleased] - v2.2.0 (planned)
+## [Unreleased] - v2.2.x (planned follow-ups)
 
 > Additive only. Zero breaking changes from v2.x. See [TODO.md](TODO.md) for the source list.
 
-### Generation parameters and DX
-- Thinking mode setters: `setThinking(array $config)` and `setReasoningEffort(string $effort)`.
-- New sampling / generation parameter setters: `setStop()`, `setTopP()`, `setToolChoice()`, `setLogprobs()`, `setTopLogprobs()`, `setUserId()`.
-- Optional `?string $name` parameter on `query()` and `buildQuery()` for the OpenAI message `name` field.
+### Still planned for the v2.2.x line
 - `setSystemMessage(string $content)` convenience method.
-- Tool `strict` mode helper for function definitions.
 - Response introspection accessors on `SuccessResult`: `getMessage()`, `getUsage()`, `getReasoningContent()`, `getToolCalls()`, `getFinishReason()`, `getCacheHitTokens()` — `run()` continues to return `string`.
 - `getQueries()`, `getConfig()`, `reset()` introspection helpers.
 - `DefaultConfigs::MAX_TOKENS` and `DefaultConfigs::RESPONSE_FORMAT_TYPE` cases (`TemperatureValues::MAX_TOKENS` / `RESPONSE_FORMAT_TYPE` deprecated).
@@ -51,6 +51,50 @@ See [TODO.md](TODO.md) for the full feature gap analysis with per-item BC classi
 - Rate-limit handling: new `RateLimitResult` class with parsed `Retry-After` header for HTTP 429 responses.
 
 > Note: Anthropic API format support is intentionally not on the v2.x roadmap. It may be reintroduced in a later release if there is sufficient community demand.
+
+---
+
+## [2.2.0] - 2026-05-25
+
+> Additive parameter setters. Zero breaking changes from `v2.1.x`. Existing callers who do not opt into any of the new setters receive a byte-identical request body compared to v2.1.x — this is enforced by the regression tests in [`tests/Feature/V220ChangesTest.php`](tests/Feature/V220ChangesTest.php).
+
+### Added
+
+#### Generation parameter setters (all optional, all omitted from the request body until explicitly invoked)
+
+- **Thinking mode** (`TODO.md` #4) — [`setThinking(array $config)`](src/Traits/Client/HasGenerationParams.php) and [`setReasoningEffort(string $effort)`](src/Traits/Client/HasGenerationParams.php). See the [DeepSeek reasoning_model docs](https://api-docs.deepseek.com/guides/reasoning_model).
+- **Stop sequences** (`TODO.md` #5) — `setStop(string|array $stop)`. Single strings are normalized to a one-element array.
+- **Nucleus sampling** (`TODO.md` #6) — `setTopP(float $topP)`.
+- **Tool choice** (`TODO.md` #7) — `setToolChoice(string|array $toolChoice)`. Accepts `"none"`, `"auto"`, `"required"`, or the named-function array shape `['type' => 'function', 'function' => ['name' => '...']]`. The previously missing `"required"` mode is now reachable.
+- **Log probabilities** (`TODO.md` #8) — `setLogprobs(bool $enabled)` and `setTopLogprobs(int $count)`.
+- **End-user identifier** (`TODO.md` #9) — `setUserId(string $userId)`. Sent on the wire as the OpenAI-spec `user` field.
+
+#### Message-level additions
+
+- **OpenAI-spec `name` field on messages** (`TODO.md` #10) — optional 3rd parameter `?string $name = null` added to [`DeepSeekClient::query()`](src/DeepSeekClient.php) and [`DeepSeekClient::buildQuery()`](src/DeepSeekClient.php). The `name` key is omitted entirely from the message when null, preserving the existing 2-argument behavior byte-for-byte.
+
+#### Function-calling additions
+
+- **Structured tool `strict` mode helper** (`TODO.md` #13) — new [`setStrictTool(string $name, array $parameters, ?string $description = null)`](src/Traits/Client/HasToolsFunctionCalling.php) appends a function tool with `strict: true` to the existing `tools` array. The existing `setTools(array)` API is unchanged.
+
+#### Enums and helpers
+
+- New `QueryFlags` cases: `STOP`, `TOP_P`, `TOOL_CHOICE`, `LOGPROBS`, `TOP_LOGPROBS`, `USER`, `THINKING`, `REASONING_EFFORT`.
+- New [`DeepSeek\Enums\Configs\ReasoningEffort`](src/Enums/Configs/ReasoningEffort.php) enum with `HIGH` and `MAX` cases.
+- New [`DeepSeek\Enums\Configs\ThinkingType`](src/Enums/Configs/ThinkingType.php) enum with `ENABLED` and `DISABLED` cases.
+- New [`DeepSeek\Enums\Queries\ToolChoiceMode`](src/Enums/Queries/ToolChoiceMode.php) enum with `NONE`, `AUTO`, and `REQUIRED` cases.
+- New [`DeepSeek\Traits\Client\HasGenerationParams`](src/Traits/Client/HasGenerationParams.php) trait composed into [`DeepSeekClient`](src/DeepSeekClient.php). Holds all eight new setters and their backing nullable state.
+
+### Internal
+
+- `run()`, `chat()`, `code()` now merge the new optional parameters via an omit-when-null loop. The original seven request-body keys (`messages`, `model`, `stream`, `temperature`, `max_tokens`, `tools`, `response_format`) remain in their original order and are sent unchanged regardless of whether any new setter is called. This is verified by the three "byte-identical when no new setters called" tests at the top of [`tests/Feature/V220ChangesTest.php`](tests/Feature/V220ChangesTest.php).
+- 23 new tests cover BC guards, every new setter, the `name` field, the strict-tool helper, and the new enum surface. The existing test suite (DeepSeekClientTest, V210ChangesTest, FunctionCallingTest) continues to pass unchanged.
+
+### Backward-compatibility notes
+
+- No public method, class, trait, enum case, or constant was removed or renamed.
+- No existing method signature changed in a breaking way. The new optional `?string $name` parameter on `query()` / `buildQuery()` follows the same additive pattern as the `?string $clientType = null` parameter added to `build()` in v2.1.0.
+- `ClientContract` is untouched; the new setters are introduced via the additive `HasGenerationParams` trait on the concrete client.
 
 ---
 

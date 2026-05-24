@@ -32,6 +32,15 @@
   - [الاستخدام مع عميل HTTP من Symfony](#الاستخدام-مع-عميل-http-من-symfony)
   - [الحصول على قائمة النماذج](#الحصول-على-قائمة-النماذج)
   - [استدعاء الدوال](#استدعاء-الدوال)
+  - [معلمات التوليد (v2.2.0)](#معلمات-التوليد-v220)
+    - [وضع التفكير ومستوى الاستدلال](#وضع-التفكير-ومستوى-الاستدلال)
+    - [تسلسلات الإيقاف (stop)](#تسلسلات-الإيقاف-stop)
+    - [أخذ العينات بالنواة (top_p)](#أخذ-العينات-بالنواة-top_p)
+    - [التحكم باختيار الأداة (tool_choice)](#التحكم-باختيار-الأداة-tool_choice)
+    - [الاحتمالات اللوغاريتمية (logprobs)](#الاحتمالات-اللوغاريتمية-logprobs)
+    - [معرّف المستخدم النهائي](#معرّف-المستخدم-النهائي)
+    - [حقل name على الرسائل](#حقل-name-على-الرسائل)
+    - [أدوات الوضع الصارم (strict)](#أدوات-الوضع-الصارم-strict)
   - [تكامل مع الأطر](#-تكامل-مع-الأطر)
 - [🆕 دليل الترحيل](#-دليل-الترحيل)
 - [📝 سجل التغييرات](#-سجل-التغييرات)
@@ -46,10 +55,18 @@
 - **تكامل API سلس**: واجهة تعتمد على PHP لميزات الذكاء الاصطناعي في DeepSeek.
 - **نمط الباني السلس**: أساليب قابلة للسلسلة لبناء الطلبات بطريقة بديهية.
 - **جاهز للمؤسسات**: تكامل مع عميل HTTP متوافق مع PSR-18.
-- **مرونة النماذج**: دعم لعدة نماذج من DeepSeek (Coder, Chat, وغيرها).
+- **أحدث نماذج DeepSeek V4**: دعم مباشر لـ `deepseek-v4-pro` و `deepseek-v4-flash` بنافذة سياق تصل إلى مليون رمز ووضعَي التفكير وعدم التفكير.
+- **تحكم كامل بمعلمات التوليد (v2.2.0)**: واجهات سلسلة لوضع التفكير، مستوى الاستدلال، تسلسلات الإيقاف، `top_p`، اختيار الأداة (`none` / `auto` / `required` / دالة مسماة)، `logprobs`، معرّف المستخدم النهائي، حقل `name` للرسائل، وأدوات الوضع الصارم.
 - **جاهز للبث**: دعم مدمج للتعامل مع الردود في الوقت الفعلي.
 - **العديد من عملاء HTTP**: يمكنك استخدام عميل `Guzzle http client` (افتراضي) أو `symfony http client` بسهولة.
 - **متوافق مع الأطر**: حزم Laravel و Symfony متاحة.
+
+> **النماذج المدعومة**
+>
+> - `Models::V4_PRO` — النموذج الرائد، أقصى عدد رموز للإخراج 384K.
+> - `Models::V4_FLASH` — سريع وموفّر، أقصى عدد رموز للإخراج 384K.
+>
+> النماذج القديمة `Models::CHAT`، `Models::CODER`، `Models::R1`، و `Models::R1Zero` مهملة وستتم إزالتها في v3.0.0. الأسماء البديلة `deepseek-chat` و `deepseek-reasoner` ستنسحب من DeepSeek API بتاريخ **2026-07-24**.
 
 ---
 
@@ -83,8 +100,10 @@ echo $response;
 ```
 
 📌 الإعدادات الافتراضية المستخدمة:
-- النموذج: `deepseek-chat`
--  الحرارة: 0.8
+- النموذج: الافتراضي من API (لا يُرسل حقل `model` ما لم تستدعِ `withModel()`).
+- الحرارة: 1.3 (`TemperatureValues::GENERAL_CONVERSATION`).
+- أقصى عدد رموز: 4096.
+- صيغة الاستجابة: `text`.
 
 ### التكوين المتقدم
 
@@ -92,14 +111,14 @@ echo $response;
 use DeepSeek\DeepSeekClient;
 use DeepSeek\Enums\Models;
 
-$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com/v3', timeout:30, clientType:'guzzle');
+$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com', timeout:30, clientType:'guzzle');
 
 $response = $client
-    ->withModel(Models::CODER->value)
+    ->withModel(Models::V4_PRO->value)
     ->withStream()
-    ->withTemperature(1.2)
+    ->setTemperature(1.2)
     ->setMaxTokens(8192)
-    ->setResponseFormat('text')
+    ->setResponseFormat('text') // أو "json_object" بحذر.
     ->query('Explain quantum computing in simple terms')
     ->run();
 
@@ -150,7 +169,7 @@ echo 'API Response:'.$response;
 //  مع القيم الافتراضية للـ baseUrl و timeout
 $client = DeepSeekClient::build('your-api-key', clientType:'symfony')
 // مع التخصيص
-$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com/v3', timeout:30, clientType:'symfony');
+$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com', timeout:30, clientType:'symfony');
 
 $client->query('Explain quantum computing in simple terms')
        ->run();
@@ -165,7 +184,16 @@ $response = DeepSeekClient::build('your-api-key')
     ->getModelsList()
     ->run();
 
-echo $response; // {"object":"list","data":[{"id":"deepseek-chat","object":"model","owned_by":"deepseek"},{"id":"deepseek-reasoner","object":"model","owned_by":"deepseek"}]}
+echo $response;
+// {
+//   "object": "list",
+//   "data": [
+//     {"id": "deepseek-v4-pro",   "object": "model", "owned_by": "deepseek"},
+//     {"id": "deepseek-v4-flash", "object": "model", "owned_by": "deepseek"},
+//     {"id": "deepseek-chat",     "object": "model", "owned_by": "deepseek"},     // مهمل، ينسحب بتاريخ 2026-07-24
+//     {"id": "deepseek-reasoner", "object": "model", "owned_by": "deepseek"}      // مهمل، ينسحب بتاريخ 2026-07-24
+//   ]
+// }
 ```
 
 ###  استدعاء الدوال 
@@ -176,8 +204,121 @@ echo $response; // {"object":"list","data":[{"id":"deepseek-chat","object":"mode
 
 ---
 
-هل ترغب في أن أضع النسخ الثلاث (الإنجليزية + العربية + الصينية) ضمن ملف Markdown موحد؟
+### معلمات التوليد (v2.2.0)
 
+منذ الإصدار `v2.2.0` تُتيح الحزمة كامل واجهة معلمات التوليد عبر دوال سلسلة. **كل دالة جديدة اختيارية**: إذا لم تستدعِها، يبقى جسم الطلب مطابقًا حرفيًا لإصدار v2.1.x — لا يوجد ما يستوجب الترحيل.
+
+#### وضع التفكير ومستوى الاستدلال
+
+تدعم نماذج V4 خطوة "تفكير" مخصصة. استخدم [`setThinking()`](src/Traits/Client/HasGenerationParams.php) لتشغيلها أو إيقافها، و [`setReasoningEffort()`](src/Traits/Client/HasGenerationParams.php) لاختيار `high` (الافتراضي للطلبات العادية) أو `max` (موصى به لمسارات الوكلاء).
+
+```php
+use DeepSeek\DeepSeekClient;
+use DeepSeek\Enums\Configs\ReasoningEffort;
+use DeepSeek\Enums\Configs\ThinkingType;
+use DeepSeek\Enums\Models;
+
+$response = DeepSeekClient::build('your-api-key')
+    ->withModel(Models::V4_PRO->value)
+    ->setThinking(['type' => ThinkingType::ENABLED->value])
+    ->setReasoningEffort(ReasoningEffort::MAX->value)
+    ->query('Prove that there are infinitely many primes.')
+    ->run();
+```
+
+> ⚠️ في وضع التفكير يتجاهل DeepSeek API بصمت كلًّا من `temperature` و `top_p`، كما تُعيد `logprobs` / `top_logprobs` خطأ HTTP 400. انظر [وثائق نموذج الاستدلال](https://api-docs.deepseek.com/guides/reasoning_model).
+
+#### تسلسلات الإيقاف (stop)
+
+ما يصل إلى 16 تسلسلًا. مرّر سلسلة نصية واحدة أو مصفوفة؛ السلاسل المفردة تُحوَّل تلقائيًا إلى مصفوفة من عنصر واحد.
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Write a haiku')
+    ->setStop(['###', "\n\n"])
+    ->run();
+```
+
+#### أخذ العينات بالنواة (top_p)
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Tell me a short story')
+    ->setTopP(0.95)
+    ->run();
+```
+
+#### التحكم باختيار الأداة (tool_choice)
+
+تقبل [`setToolChoice()`](src/Traits/Client/HasGenerationParams.php) القيم `"none"` و `"auto"` و `"required"` (إجبار استدعاء أداة)، أو شكل الدالة المسماة. وضع `"required"` المفقود سابقًا أصبح متاحًا الآن.
+
+```php
+use DeepSeek\Enums\Queries\ToolChoiceMode;
+
+// إجبار النموذج على استدعاء أي أداة
+$client->setTools($tools)
+       ->setToolChoice(ToolChoiceMode::REQUIRED->value);
+
+// إجبار النموذج على استدعاء دالة محددة بالاسم
+$client->setTools($tools)
+       ->setToolChoice([
+           'type' => 'function',
+           'function' => ['name' => 'get_weather'],
+       ]);
+```
+
+#### الاحتمالات اللوغاريتمية (logprobs)
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Hello')
+    ->setLogprobs(true)
+    ->setTopLogprobs(5)
+    ->run();
+```
+
+#### معرّف المستخدم النهائي
+
+لعزل حدود المعدل، السلامة، وعزل ذاكرة التخزين المؤقت (KV-cache). يُرسل على السلك باسم حقل `user` وفق مواصفة OpenAI.
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->setUserId('user-42')
+    ->query('Hello')
+    ->run();
+```
+
+#### حقل name على الرسائل
+
+معامل ثالث اختياري على `query()` (و `buildQuery()`) للتمييز بين المشاركين الذين يحملون نفس الدور وفق مواصفة OpenAI. الاستدعاءات القديمة بمعاملين لا تتأثر.
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Hello, I am Alice.', 'user', 'alice')
+    ->query('Hello, I am Bob.',   'user', 'bob')
+    ->run();
+```
+
+#### أدوات الوضع الصارم (strict)
+
+تُضيف [`setStrictTool()`](src/Traits/Client/HasToolsFunctionCalling.php) دالة بأداة مع `strict: true`، مما يُلزم النموذج بإنتاج وسائط مطابقة تمامًا لمخطط JSON. تتكامل بأمان مع `setTools()` — تُلحِق ولا تستبدل.
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->setStrictTool(
+        name: 'get_weather',
+        parameters: [
+            'type' => 'object',
+            'properties' => ['city' => ['type' => 'string']],
+            'required' => ['city'],
+        ],
+        description: 'Get the current weather for a city.',
+    )
+    ->query('What is the weather like in Cairo?')
+    ->run();
+```
+
+---
 
 ### 🛠 تكامل مع الأطر
 

@@ -11,6 +11,7 @@ use DeepSeek\Enums\Requests\EndpointSuffixes;
 use DeepSeek\Enums\Requests\QueryFlags;
 use DeepSeek\Factories\ApiFactory;
 use DeepSeek\Resources\Resource;
+use DeepSeek\Traits\Client\HasGenerationParams;
 use DeepSeek\Traits\Client\HasToolsFunctionCalling;
 use DeepSeek\Traits\Resources\HasChat;
 use DeepSeek\Traits\Resources\HasCoder;
@@ -19,6 +20,7 @@ use Psr\Http\Client\ClientInterface;
 class DeepSeekClient implements ClientContract
 {
     use HasChat, HasCoder;
+    use HasGenerationParams;
     use HasToolsFunctionCalling;
 
     /**
@@ -93,6 +95,12 @@ class DeepSeekClient implements ClientContract
             ],
         ];
 
+        foreach ($this->getOptionalRequestParams() as $key => $value) {
+            if ($value !== null) {
+                $requestData[$key] = $value;
+            }
+        }
+
         $this->setResult((new Resource($this->httpClient, $this->endpointSuffixes))->sendRequest($requestData, $this->requestMethod));
 
         return $this->getResult()->getContent();
@@ -122,11 +130,14 @@ class DeepSeekClient implements ClientContract
     /**
      * Add a query to the accumulated queries list.
      *
+     * @param  string|null  $name  Optional OpenAI-spec "name" field on the message.
+     *                             When non-null it differentiates participants of the
+     *                             same role. Omitted from the message when null.
      * @return self The current instance for method chaining.
      */
-    public function query(string $content, ?string $role = 'user'): self
+    public function query(string $content, ?string $role = 'user', ?string $name = null): self
     {
-        $this->queries[] = $this->buildQuery($content, $role);
+        $this->queries[] = $this->buildQuery($content, $role, $name);
 
         return $this;
     }
@@ -203,12 +214,18 @@ class DeepSeekClient implements ClientContract
         return $this;
     }
 
-    public function buildQuery(string $content, ?string $role = null): array
+    public function buildQuery(string $content, ?string $role = null, ?string $name = null): array
     {
-        return [
+        $query = [
             'role' => $role ?: QueryRoles::USER->value,
             'content' => $content,
         ];
+
+        if ($name !== null) {
+            $query['name'] = $name;
+        }
+
+        return $query;
     }
 
     /**
