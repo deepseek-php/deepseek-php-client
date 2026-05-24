@@ -49,7 +49,7 @@
             "role": "creator"
         }
     ],
-    "version": "2.1.0",
+    "version": "2.2.0",
     "require": {
         "php": "^8.2.0",
         "nyholm/psr7": "^1.8",

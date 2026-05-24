@@ -27,6 +27,13 @@ trait HasCoder
                 'type' => $this->responseFormatType,
             ],
         ];
+
+        foreach ($this->getOptionalRequestParams() as $key => $value) {
+            if ($value !== null) {
+                $requestData[$key] = $value;
+            }
+        }
+
         $this->queries = [];
         $this->setResult((new Coder($this->httpClient))->sendRequest($requestData));
 

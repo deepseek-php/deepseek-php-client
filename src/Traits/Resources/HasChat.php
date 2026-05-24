@@ -27,6 +27,13 @@ trait HasChat
                 'type' => $this->responseFormatType,
             ],
         ];
+
+        foreach ($this->getOptionalRequestParams() as $key => $value) {
+            if ($value !== null) {
+                $requestData[$key] = $value;
+            }
+        }
+
         $this->queries = [];
         $this->setResult((new Chat($this->httpClient))->sendRequest($requestData));
 
