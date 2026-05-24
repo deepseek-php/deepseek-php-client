@@ -32,6 +32,15 @@
   - [Use with Symfony HttpClient](#use-with-symfony-httpclient)
   - [Get Models List](#get-models-list)
   - [Function Calling](#function-calling)
+  - [Generation Parameters (v2.2.0)](#generation-parameters-v220)
+    - [Thinking mode and reasoning effort](#thinking-mode-and-reasoning-effort)
+    - [Stop sequences](#stop-sequences)
+    - [Nucleus sampling (top_p)](#nucleus-sampling-top_p)
+    - [Tool choice control](#tool-choice-control)
+    - [Log probabilities](#log-probabilities)
+    - [End-user identifier](#end-user-identifier)
+    - [Message name field](#message-name-field)
+    - [Strict mode tools](#strict-mode-tools)
   - [Framework Integration](#-framework-integration)
 - [🆕 Migration Guide](#-migration-guide)
 - [📝 Changelog](#-changelog)
@@ -47,6 +56,7 @@
 - **Fluent Builder Pattern**: Chainable methods for intuitive request building.
 - **Enterprise Ready**: PSR-18 compliant HTTP client integration.
 - **Latest DeepSeek V4 Models**: First-class support for `deepseek-v4-pro` and `deepseek-v4-flash` with 1M-token context windows and thinking / non-thinking modes.
+- **Full Generation Parameter Control (v2.2.0)**: Fluent setters for thinking mode, reasoning effort, stop sequences, `top_p`, tool choice (`none` / `auto` / `required` / named function), `logprobs`, end-user identifier, message `name` field, and strict-mode tools.
 - **Streaming Ready**: Built-in support for real-time response handling.
 - **Many Http Clients**: easy to use `Guzzle http client` (default) , or `symfony http client`.
 - **Framework Friendly**: Laravel & Symfony packages available.
@@ -192,6 +202,123 @@ Function Calling allows the model to call external tools to enhance its capabili
 
 You Can check the documentation for function calling in [FUNCTION-CALLING.md](docs/FUNCTION-CALLING.md)
 
+---
+
+### Generation Parameters (v2.2.0)
+
+Since `v2.2.0` the client exposes the full DeepSeek generation surface as fluent setters. **Every new setter is opt-in**: when you don't call it, the request body is byte-identical to v2.1.x — there's nothing to migrate.
+
+#### Thinking mode and reasoning effort
+
+V4 models support a dedicated "thinking" reasoning step. Use [`setThinking()`](src/Traits/Client/HasGenerationParams.php) to toggle it on or off, and [`setReasoningEffort()`](src/Traits/Client/HasGenerationParams.php) to choose between `high` (default for normal requests) and `max` (recommended for agent flows).
+
+```php
+use DeepSeek\DeepSeekClient;
+use DeepSeek\Enums\Configs\ReasoningEffort;
+use DeepSeek\Enums\Configs\ThinkingType;
+use DeepSeek\Enums\Models;
+
+$response = DeepSeekClient::build('your-api-key')
+    ->withModel(Models::V4_PRO->value)
+    ->setThinking(['type' => ThinkingType::ENABLED->value])
+    ->setReasoningEffort(ReasoningEffort::MAX->value)
+    ->query('Prove that there are infinitely many primes.')
+    ->run();
+```
+
+> ⚠️ In thinking mode the DeepSeek API silently ignores `temperature` / `top_p`, and `logprobs` / `top_logprobs` return HTTP 400. See the [reasoning model docs](https://api-docs.deepseek.com/guides/reasoning_model).
+
+#### Stop sequences
+
+Up to 16 stop sequences. Pass a single string or an array; single strings are normalized to a one-element array.
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Write a haiku')
+    ->setStop(['###', "\n\n"])
+    ->run();
+```
+
+#### Nucleus sampling (top_p)
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Tell me a short story')
+    ->setTopP(0.95)
+    ->run();
+```
+
+#### Tool choice control
+
+[`setToolChoice()`](src/Traits/Client/HasGenerationParams.php) accepts `"none"`, `"auto"`, `"required"` (force a tool call), or the named-function array shape. The previously missing `"required"` mode is now reachable.
+
+```php
+use DeepSeek\Enums\Queries\ToolChoiceMode;
+
+// Force the model to call any tool
+$client->setTools($tools)
+       ->setToolChoice(ToolChoiceMode::REQUIRED->value);
+
+// Force a specific named function
+$client->setTools($tools)
+       ->setToolChoice([
+           'type' => 'function',
+           'function' => ['name' => 'get_weather'],
+       ]);
+```
+
+#### Log probabilities
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Hello')
+    ->setLogprobs(true)
+    ->setTopLogprobs(5)
+    ->run();
+```
+
+#### End-user identifier
+
+For rate-limit isolation, content safety, and KV-cache isolation. Sent on the wire as the OpenAI-spec `user` field.
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->setUserId('user-42')
+    ->query('Hello')
+    ->run();
+```
+
+#### Message `name` field
+
+Optional third parameter on `query()` (and `buildQuery()`) to differentiate participants of the same role per OpenAI spec. Existing 2-argument calls are unchanged.
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Hello, I am Alice.', 'user', 'alice')
+    ->query('Hello, I am Bob.',   'user', 'bob')
+    ->run();
+```
+
+#### Strict mode tools
+
+[`setStrictTool()`](src/Traits/Client/HasToolsFunctionCalling.php) appends a function tool with `strict: true`, instructing the model to produce arguments that conform exactly to the JSON schema. Composes safely with `setTools()` — it appends, never replaces.
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->setStrictTool(
+        name: 'get_weather',
+        parameters: [
+            'type' => 'object',
+            'properties' => ['city' => ['type' => 'string']],
+            'required' => ['city'],
+        ],
+        description: 'Get the current weather for a city.',
+    )
+    ->query('What is the weather like in Cairo?')
+    ->run();
+```
+
+---
 
 ### 🛠 Framework Integration
 
