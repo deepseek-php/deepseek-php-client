@@ -32,6 +32,15 @@
   - [使用 Symfony HttpClient](#使用-symfony-httpclient)
   - [获取模型列表](#获取模型列表)
   - [函数调用](#函数调用)
+  - [生成参数（v2.2.0）](#生成参数v220)
+    - [思考模式与推理强度](#思考模式与推理强度)
+    - [停止序列（stop）](#停止序列stop)
+    - [核采样（top_p）](#核采样top_p)
+    - [工具选择控制（tool_choice）](#工具选择控制tool_choice)
+    - [对数概率（logprobs）](#对数概率logprobs)
+    - [最终用户标识](#最终用户标识)
+    - [消息 name 字段](#消息-name-字段)
+    - [严格模式工具（strict）](#严格模式工具strict)
   - [框架集成](#-框架集成)
 - [🆕 迁移指南](#-迁移指南)
 - [📝 更新日志](#-更新日志)
@@ -46,9 +55,17 @@
 - **无缝 API 集成**: DeepSeek AI 功能的 PHP 优先接口
 - **构建器模式**: 直观的链接请求构建方法
 - **企业级别**: 符合 PSR-18 规范
-- **模型灵活性**: 支持多种 DeepSeek 模型（Coder、Chat 等）
+- **最新 DeepSeek V4 模型**: 一流支持 `deepseek-v4-pro` 和 `deepseek-v4-flash`，具备 1M 令牌上下文窗口及思考 / 非思考模式
+- **完整的生成参数控制（v2.2.0）**: 提供思考模式、推理强度、停止序列、`top_p`、工具选择（`none` / `auto` / `required` / 命名函数）、`logprobs`、最终用户标识、消息 `name` 字段以及严格模式工具的链式 setter
 - **流式传输**: 内置对实时响应处理的支持
 - **框架友好**: 提供 Laravel 和 Symfony 包
+
+> **受支持的模型**
+>
+> - `Models::V4_PRO` — 旗舰模型，最大输出 384K 令牌。
+> - `Models::V4_FLASH` — 快速、经济，最大输出 384K 令牌。
+>
+> 旧版 `Models::CHAT`、`Models::CODER`、`Models::R1` 与 `Models::R1Zero` 已弃用，将在 v3.0.0 中移除。`deepseek-chat` 与 `deepseek-reasoner` 别名将于 **2026-07-24** 从 DeepSeek API 中下线。
 
 ---
 
@@ -82,23 +99,25 @@ echo $response;
 ```
 
 📌 默认配置:
-- Model: `deepseek-chat`
-- Temperature: 0.8
+- 模型: API 默认（除非调用 `withModel()`，否则不发送 `model` 字段）
+- 温度: 1.3（`TemperatureValues::GENERAL_CONVERSATION`）
+- 最大令牌数: 4096
+- 响应格式: `text`
 
-### Advanced Configuration
+### 高级配置
 
 ```php
 use DeepSeek\DeepSeekClient;
 use DeepSeek\Enums\Models;
 
-$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com/v3', timeout:30, clientType:'guzzle');
+$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com', timeout:30, clientType:'guzzle');
 
 $response = $client
-    ->withModel(Models::CODER->value)
+    ->withModel(Models::V4_PRO->value)
     ->withStream()
-    ->withTemperature(1.2)
+    ->setTemperature(1.2)
     ->setMaxTokens(8192)
-    ->setResponseFormat('text')
+    ->setResponseFormat('text') // 或 "json_object"，请谨慎使用。
     ->query('Explain quantum computing in simple terms')
     ->run();
 
@@ -139,16 +158,17 @@ echo 'API Response:'.$response;
 
 ---
 
-### Use with Symfony HttpClient
-the package already built with `symfony Http client`,  if you need to use package with `symfony` Http Client , it is easy to achieve that, just pass `clientType:'symfony'` with `build` function.
+### 使用 Symfony HttpClient
 
-ex with symfony:
+本包已内置 `symfony Http client`。若需使用 Symfony 的 HTTP 客户端，只需在 `build` 函数中传入 `clientType:'symfony'` 即可。
+
+Symfony 示例：
 
 ```php
-//  with defaults baseUrl and timeout
+// 使用默认的 baseUrl 和 timeout
 $client = DeepSeekClient::build('your-api-key', clientType:'symfony')
-// with customization
-$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com/v3', timeout:30, clientType:'symfony');
+// 自定义配置
+$client = DeepSeekClient::build(apiKey:'your-api-key', baseUrl:'https://api.deepseek.com', timeout:30, clientType:'symfony');
 
 $client->query('Explain quantum computing in simple terms')
        ->run();
@@ -163,7 +183,16 @@ $response = DeepSeekClient::build('your-api-key')
     ->getModelsList()
     ->run();
 
-echo $response; // {"object":"list","data":[{"id":"deepseek-chat","object":"model","owned_by":"deepseek"},{"id":"deepseek-reasoner","object":"model","owned_by":"deepseek"}]}
+echo $response;
+// {
+//   "object": "list",
+//   "data": [
+//     {"id": "deepseek-v4-pro",   "object": "model", "owned_by": "deepseek"},
+//     {"id": "deepseek-v4-flash", "object": "model", "owned_by": "deepseek"},
+//     {"id": "deepseek-chat",     "object": "model", "owned_by": "deepseek"},     // 已弃用，2026-07-24 下线
+//     {"id": "deepseek-reasoner", "object": "model", "owned_by": "deepseek"}      // 已弃用，2026-07-24 下线
+//   ]
+// }
 ```
 
 ### 函数调用
@@ -172,6 +201,123 @@ echo $response; // {"object":"list","data":[{"id":"deepseek-chat","object":"mode
 你可以在文档中查看有关函数调用的详细信息：
 [FUNCTION-CALLING.md](docs/FUNCTION-CALLING.md)
 
+---
+
+### 生成参数（v2.2.0）
+
+从 `v2.2.0` 起，本客户端通过链式 setter 暴露了完整的 DeepSeek 生成参数。**所有新 setter 都是可选的**：若不调用，请求体与 v2.1.x 完全一致 — 无需任何迁移。
+
+#### 思考模式与推理强度
+
+V4 模型支持专门的"思考"推理阶段。使用 [`setThinking()`](src/Traits/Client/HasGenerationParams.php) 切换开关，使用 [`setReasoningEffort()`](src/Traits/Client/HasGenerationParams.php) 在 `high`（普通请求的默认值）与 `max`（推荐用于 Agent 流程）之间选择。
+
+```php
+use DeepSeek\DeepSeekClient;
+use DeepSeek\Enums\Configs\ReasoningEffort;
+use DeepSeek\Enums\Configs\ThinkingType;
+use DeepSeek\Enums\Models;
+
+$response = DeepSeekClient::build('your-api-key')
+    ->withModel(Models::V4_PRO->value)
+    ->setThinking(['type' => ThinkingType::ENABLED->value])
+    ->setReasoningEffort(ReasoningEffort::MAX->value)
+    ->query('Prove that there are infinitely many primes.')
+    ->run();
+```
+
+> ⚠️ 在思考模式下，DeepSeek API 会静默忽略 `temperature` / `top_p`，并对 `logprobs` / `top_logprobs` 返回 HTTP 400。请参考 [推理模型文档](https://api-docs.deepseek.com/guides/reasoning_model)。
+
+#### 停止序列（stop）
+
+最多 16 个停止序列。可传入字符串或数组；单个字符串会被规范化为单元素数组。
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Write a haiku')
+    ->setStop(['###', "\n\n"])
+    ->run();
+```
+
+#### 核采样（top_p）
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Tell me a short story')
+    ->setTopP(0.95)
+    ->run();
+```
+
+#### 工具选择控制（tool_choice）
+
+[`setToolChoice()`](src/Traits/Client/HasGenerationParams.php) 接受 `"none"`、`"auto"`、`"required"`（强制调用工具）或命名函数数组形式。之前缺失的 `"required"` 模式现在已可用。
+
+```php
+use DeepSeek\Enums\Queries\ToolChoiceMode;
+
+// 强制模型调用任意工具
+$client->setTools($tools)
+       ->setToolChoice(ToolChoiceMode::REQUIRED->value);
+
+// 强制模型调用指定名称的函数
+$client->setTools($tools)
+       ->setToolChoice([
+           'type' => 'function',
+           'function' => ['name' => 'get_weather'],
+       ]);
+```
+
+#### 对数概率（logprobs）
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Hello')
+    ->setLogprobs(true)
+    ->setTopLogprobs(5)
+    ->run();
+```
+
+#### 最终用户标识
+
+用于速率限制隔离、内容安全和 KV 缓存隔离。在请求中以 OpenAI 规范的 `user` 字段发送。
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->setUserId('user-42')
+    ->query('Hello')
+    ->run();
+```
+
+#### 消息 name 字段
+
+`query()`（与 `buildQuery()`）的可选第 3 个参数，遵循 OpenAI 规范用于区分同一角色下的不同参与者。原有的两参数调用保持不变。
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->query('Hello, I am Alice.', 'user', 'alice')
+    ->query('Hello, I am Bob.',   'user', 'bob')
+    ->run();
+```
+
+#### 严格模式工具（strict）
+
+[`setStrictTool()`](src/Traits/Client/HasToolsFunctionCalling.php) 追加一个带 `strict: true` 的函数工具，强制模型生成完全符合 JSON Schema 的参数。可与 `setTools()` 安全组合 — 它是追加而非替换。
+
+```php
+$response = DeepSeekClient::build('your-api-key')
+    ->setStrictTool(
+        name: 'get_weather',
+        parameters: [
+            'type' => 'object',
+            'properties' => ['city' => ['type' => 'string']],
+            'required' => ['city'],
+        ],
+        description: 'Get the current weather for a city.',
+    )
+    ->query('What is the weather like in Cairo?')
+    ->run();
+```
+
+---
 
 ### 🛠 框架集成
 
